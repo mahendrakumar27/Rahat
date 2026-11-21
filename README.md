@@ -106,3 +106,18 @@ Both developers contributed to the design and development of Rahat.
 ---
 
 ⭐ If you find this project interesting, consider exploring the repository and following its development.
+
+
+## Patient accounts and prescriptions (development milestone)
+
+The repository now includes a Flask API for patient registration, login, and account-linked prescription uploads. The static website remains on GitHub Pages; the API must be deployed separately.
+
+- Backend: `app.py`
+- Dependencies: `requirements.txt`
+- Automated API tests: `tests/test_api.py`
+- Deployment guide: `DEPLOYMENT.md`
+- Frontend API setting: `config.js`
+
+Patient accounts use password hashes and short-lived JWT access tokens. Prescription ownership is assigned by the backend from the authenticated account, not from a patient ID sent by the browser. Patients can list, download, and delete only their own uploaded files.
+
+**Important:** This is a development prototype. Email/mobile OTP verification and doctor accounts are not implemented. Do not upload real patient records until the backend is deployed with a persistent database, HTTPS, secure secrets, backups, access controls, and an appropriate privacy/security review.
