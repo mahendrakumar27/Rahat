@@ -49,7 +49,7 @@ def create_app(test_config=None):
         JWT_ACCESS_TOKEN_EXPIRES=timedelta(hours=2),
         SQLALCHEMY_DATABASE_URI=database_url,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        MAX_CONTENT_LENGTH=8 * 1024 * 1024,
+        MAX_CONTENT_LENGTH=9 * 1024 * 1024,
     )
     if test_config:
         app.config.update(test_config)
@@ -161,7 +161,7 @@ def create_app(test_config=None):
                 expected = {".jpg": "JPEG", ".jpeg": "JPEG", ".png": "PNG", ".webp": "WEBP"}[extension]
                 if image.format != expected:
                     return jsonify(error="The image content does not match its file extension."), 400
-            except (UnidentifiedImageError, OSError, ValueError):
+            except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
                 return jsonify(error="The uploaded image could not be validated."), 400
 
         row = Prescription(
