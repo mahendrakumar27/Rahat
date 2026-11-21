@@ -21,27 +21,43 @@ The project aims to help people find healthcare services, understand preliminary
 - **Diagnostic Services:** Explore diagnostic services such as blood tests, blood sugar and blood pressure checks.
 - **Appointment Requests:** Interface for selecting preferred appointment dates and times.
 - **Health History:** Interface for viewing previous health check-ins.
-- **User Authentication Interface:** Login and registration screens.
+- **Patient Accounts (development milestone):** Email/password registration and login through the Flask API.
+- **My Prescriptions:** Account-linked prescription uploads with private list, download, and delete routes.
 
-*Note: The availability of backend services, real OTP verification, persistent health records and confirmed appointment booking must be verified separately. Interface availability does not necessarily mean these services are operational.*
+*Note: The patient API must be deployed and configured separately. Email/SMS OTP verification, doctor accounts, clinician-authored prescriptions, persistent symptom history and confirmed appointment booking are not implemented.*
 
 ## 🛠️ Technology Stack
 
 - HTML5
 - CSS3
 - JavaScript
-- GitHub Pages (deployment and hosting)
+- Flask (REST API)
+- Flask-SQLAlchemy and PostgreSQL (hosted database; SQLite for local development)
+- JWT authentication and Werkzeug password hashing
+- GitHub Pages (static frontend hosting)
 
 ## 🏗️ Project Structure
 
 ```text
 Rahat/
-│
 ├── index.html
+├── config.js
+├── app.py
+├── requirements.txt
+├── tests/
+│   └── test_api.py
+├── .github/workflows/backend-tests.yml
+├── prd.md
+├── architecture.md
+├── Design.md
+├── Memory.md
+├── Rules.md
+├── Tracker.md
+├── DEPLOYMENT.md
 └── README.md
 ```
 
-The current website is maintained as a single HTML file. Its structure can be modularized as the project develops.
+The frontend remains a static single-page site. The Flask API is deployed separately.
 
 ## 🚀 Run Locally
 
@@ -57,9 +73,9 @@ The current website is maintained as a single HTML file. Its structure can be mo
    cd Rahat
    ```
 
-3. Open `index.html` in your web browser.
+3. Follow `DEPLOYMENT.md` to start the Flask API and serve the frontend locally.
 
-No additional server is required for the static website.
+The API is required for registration, login and account-linked prescription storage.
 
 ## 🌐 Live Deployment
 
@@ -69,8 +85,8 @@ Visit: https://mahendrakumar27.github.io/Rahat/
 
 ## 🔮 Future Enhancements
 
-- Integrate a reliable backend and database.
-- Develop verified OTP-based authentication.
+- Add verified doctor onboarding and clinician-authored prescriptions.
+- Add email/mobile verification and account recovery.
 - Add verified government healthcare facilities across Satara district.
 - Integrate location-based hospital and PHC discovery.
 - Implement real appointment request and tracking functionality.
