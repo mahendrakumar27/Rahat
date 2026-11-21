@@ -416,6 +416,11 @@
   .rx-medicine{background:var(--mist);border-radius:9px;padding:12px;margin:8px 0}
   @media(max-width:600px){.rx-grid{grid-template-columns:1fr}.rx-field.full{grid-column:auto}.rx-shell{padding:28px 16px}}
 
+  .api-message{margin:14px 0;color:var(--teal);font-size:.9rem;line-height:1.5;min-height:1.2em;}
+  .api-message.error{color:#B42318;}
+  .auth-panel form{display:flex;flex-direction:column;gap:8px;}
+  .auth-panel .field-label{margin-top:8px;}
+  .auth-panel .auth-input{margin-bottom:4px;}
 </style>
 </head>
 <body>
@@ -500,85 +505,27 @@
 
 <!-- ================= PLACEHOLDER VIEWS (built out in upcoming tasks) ================= -->
 <section id="view-login" class="view">
-  <div class="form-shell">
-    <div class="form-top-nav">
-      <button class="back-link" onclick="navigate('home')">&larr; Back to home</button>
-    </div>
+  <div class="form-shell"><div class="form-top-nav"><button class="back-link" onclick="navigate('home')">&larr; Back to home</button></div>
     <div class="form-card auth-card">
-
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tabLoginBtn" onclick="switchAuthTab('login')">Login</button>
-        <button class="auth-tab" id="tabSignupBtn" onclick="switchAuthTab('signup')">Sign Up</button>
+      <div class="auth-tabs"><button class="auth-tab active" id="tabLoginBtn" onclick="switchAuthTab('login')">Login</button><button class="auth-tab" id="tabSignupBtn" onclick="switchAuthTab('signup')">Sign Up</button></div>
+      <div class="auth-panel" id="panel-login"><h1>Welcome back</h1><p>Sign in to view prescriptions linked to your account.</p>
+        <form id="loginForm">
+          <label class="field-label" for="loginEmail">Email address</label><input type="email" class="auth-input" id="loginEmail" required autocomplete="email" placeholder="you@example.com">
+          <label class="field-label" for="loginPassword">Password</label><input type="password" class="auth-input" id="loginPassword" required autocomplete="current-password" minlength="10" placeholder="Your password">
+          <div class="form-actions"><button class="btn-primary" type="submit" id="loginSubmit">Login</button></div>
+        </form><p class="auth-switch-hint">New here? <button type="button" onclick="switchAuthTab('signup')">Create an account</button></p>
       </div>
-
-      <!-- ---- LOGIN PANEL ---- -->
-      <div class="auth-panel" id="panel-login">
-        <h1>Welcome back</h1>
-        <p>Login with your email or mobile number</p>
-
-        <span class="field-label">Email address</span>
-        <input type="email" class="auth-input" id="loginEmail" placeholder="you@example.com">
-
-        <span class="field-label">Mobile number</span>
-        <input type="tel" class="auth-input" id="loginMobile" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric">
-
-        <div class="form-actions">
-          <button class="btn-primary" onclick="requestOtp('login')">Get OTP</button>
-        </div>
-
-        <div class="otp-panel" id="otpPanel-login" style="display:none;">
-          <p class="otp-sent-msg" id="otpSentMsg-login"></p>
-          <div class="otp-inputs" id="otpInputs-login">
-            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
-            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
-            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
-            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
-            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
-            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
-          </div>
-          <div class="otp-actions">
-            <button class="btn-primary" onclick="verifyOtp('login')">Verify &amp; Login</button>
-            <button class="resend-link" id="resendBtn-login" onclick="requestOtp('login', true)" disabled>Resend OTP</button>
-          </div>
-        </div>
-
-        <p class="auth-switch-hint">New here? <button onclick="switchAuthTab('signup')">Create an account</button></p>
+      <div class="auth-panel" id="panel-signup" style="display:none;"><h1>Create your patient account</h1><p>Register to keep your prescription copies linked to your account.</p>
+        <form id="signupForm">
+          <label class="field-label" for="signupName">Full name</label><input type="text" class="auth-input" id="signupName" required maxlength="100" autocomplete="name" placeholder="Your full name">
+          <label class="field-label" for="signupEmail">Email address</label><input type="email" class="auth-input" id="signupEmail" required autocomplete="email" placeholder="you@example.com">
+          <label class="field-label" for="signupMobile">Mobile number</label><input type="tel" class="auth-input" id="signupMobile" required maxlength="10" pattern="[0-9]{10}" inputmode="numeric" autocomplete="tel" placeholder="10-digit mobile number">
+          <label class="field-label" for="signupPassword">Create password</label><input type="password" class="auth-input" id="signupPassword" required minlength="10" maxlength="128" autocomplete="new-password" placeholder="At least 10 characters">
+          <div class="form-actions"><button class="btn-primary" type="submit" id="signupSubmit">Create account</button></div>
+        </form><p class="auth-switch-hint">Already have an account? <button type="button" onclick="switchAuthTab('login')">Login</button></p>
       </div>
-
-      <!-- ---- SIGN UP PANEL ---- -->
-      <div class="auth-panel" id="panel-signup" style="display:none;">
-        <h1>Create your account</h1>
-        <p>Sign up with your email or mobile number</p>
-
-        <span class="field-label">Email address</span>
-        <input type="email" class="auth-input" id="signupEmail" placeholder="you@example.com">
-
-        <span class="field-label">Mobile number</span>
-        <input type="tel" class="auth-input" id="signupMobile" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric">
-
-        <div class="form-actions">
-          <button class="btn-primary" onclick="requestOtp('signup')">Get OTP</button>
-        </div>
-
-        <div class="otp-panel" id="otpPanel-signup" style="display:none;">
-          <p class="otp-sent-msg" id="otpSentMsg-signup"></p>
-          <div class="otp-inputs" id="otpInputs-signup">
-            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
-            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
-            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
-            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
-            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
-            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
-          </div>
-          <div class="otp-actions">
-            <button class="btn-primary" onclick="verifyOtp('signup')">Verify &amp; Create Account</button>
-            <button class="resend-link" id="resendBtn-signup" onclick="requestOtp('signup', true)" disabled>Resend OTP</button>
-          </div>
-        </div>
-
-        <p class="auth-switch-hint">Already have an account? <button onclick="switchAuthTab('login')">Login</button></p>
-      </div>
-
+      <p id="authMessage" class="api-message" role="status" aria-live="polite"></p>
+      <p class="rx-warning"><strong>Prototype notice:</strong> Email/mobile verification is not enabled. Do not use real patient records until the backend is deployed with production security, persistent storage, backups, and privacy review.</p>
     </div>
   </div>
 </section>
@@ -603,43 +550,16 @@
 
 <section id="view-prescriptions" class="view">
   <div class="rx-shell"><div class="rx-wrap">
-    <div class="form-top-nav"><button class="back-link" onclick="navigate('home')">&larr; Back to home</button></div>
-    <div class="rx-head"><h1>Prescription Management</h1><p>Keep uploaded prescription copies and create printable prescription drafts.</p></div>
-    <div class="rx-warning"><strong>Prototype only:</strong> Data stays in this browser on this device. It is not encrypted, not synced to a server, and is not suitable for real patient records. Do not upload real medical documents. A prescription created here is only a draft and must not be treated as medical advice or a valid prescription.</div>
-    <div class="rx-tabs">
-      <button class="rx-tab active" id="rxTabUpload" onclick="switchRxTab('upload')">Upload prescription</button>
-      <button class="rx-tab" id="rxTabCreate" onclick="switchRxTab('create')">Create prescription draft</button>
+    <div class="form-top-nav"><button class="back-link" onclick="navigate('home')">&larr; Back to home</button><button class="rx-secondary" onclick="logoutPatient()">Logout</button></div>
+    <div class="rx-head"><h1>My Prescriptions</h1><p id="patientWelcome">Your personal prescription records.</p></div>
+    <div class="rx-warning"><strong>Prototype only:</strong> Do not upload real medical records until the hosted API, persistent database, HTTPS, access controls, backups, and privacy requirements have been verified. This account system is a development milestone, not a certified medical-record service.</div>
+    <div class="rx-panel active" style="display:block"><h2>Upload an existing prescription</h2>
+      <form id="rxUploadForm"><div class="rx-grid"><div class="rx-field full"><label for="rxUploadFile">Prescription file (PDF, JPG, PNG, or WebP; maximum 8 MB) *</label><input id="rxUploadFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" required></div></div>
+      <div class="rx-actions"><button class="rx-primary" type="submit">Upload to my account</button></div></form>
     </div>
-    <div class="rx-panel active" id="rxUploadPanel">
-      <h2>Upload an existing prescription</h2>
-      <form id="rxUploadForm"><div class="rx-grid">
-        <div class="rx-field"><label for="rxUploadPatient">Patient name *</label><input id="rxUploadPatient" required maxlength="80" placeholder="Demo patient name"></div>
-        <div class="rx-field"><label for="rxUploadDoctor">Doctor / clinic name</label><input id="rxUploadDoctor" maxlength="100" placeholder="Doctor or clinic"></div>
-        <div class="rx-field"><label for="rxUploadDate">Prescription date *</label><input id="rxUploadDate" type="date" required></div>
-        <div class="rx-field"><label for="rxUploadFile">Prescription file (PDF or image) *</label><input id="rxUploadFile" type="file" accept=".pdf,image/*" required></div>
-        <div class="rx-field full"><label for="rxUploadNotes">Notes (optional)</label><textarea id="rxUploadNotes" maxlength="500" placeholder="Short description"></textarea></div>
-      </div><div class="rx-actions"><button class="rx-primary" type="submit">Save uploaded copy</button></div></form>
-    </div>
-    <div class="rx-panel" id="rxCreatePanel">
-      <h2>Create a prescription draft</h2>
-      <form id="rxCreateForm"><div class="rx-grid">
-        <div class="rx-field"><label for="rxPatient">Patient name *</label><input id="rxPatient" required maxlength="80" placeholder="Demo patient name"></div>
-        <div class="rx-field"><label for="rxAge">Patient age</label><input id="rxAge" type="number" min="0" max="120" placeholder="Age"></div>
-        <div class="rx-field"><label for="rxDoctor">Doctor name *</label><input id="rxDoctor" required maxlength="100" placeholder="Doctor name"></div>
-        <div class="rx-field"><label for="rxDate">Date *</label><input id="rxDate" type="date" required></div>
-        <div class="rx-field full"><label for="rxDiagnosis">Diagnosis / reason for visit</label><textarea id="rxDiagnosis" maxlength="500" placeholder="Enter clinician-provided diagnosis"></textarea></div>
-      </div>
-      <div class="rx-medicine"><strong>Medicine details (entered by clinician)</strong><div class="rx-grid" style="margin-top:10px">
-        <div class="rx-field"><label for="rxMedicine">Medicine name *</label><input id="rxMedicine" required maxlength="100" placeholder="Medicine name"></div>
-        <div class="rx-field"><label for="rxDosage">Dosage *</label><input id="rxDosage" required maxlength="80" placeholder="As directed by clinician"></div>
-        <div class="rx-field"><label for="rxFrequency">Frequency *</label><input id="rxFrequency" required maxlength="80" placeholder="e.g. as prescribed"></div>
-        <div class="rx-field"><label for="rxDuration">Duration *</label><input id="rxDuration" required maxlength="80" placeholder="Duration as prescribed"></div>
-      </div></div>
-      <div class="rx-field"><label for="rxInstructions">Additional instructions</label><textarea id="rxInstructions" maxlength="500" placeholder="Clinician-entered instructions"></textarea></div>
-      <div class="rx-actions"><button class="rx-primary" type="submit">Save prescription draft</button></div></form>
-    </div>
-    <h2 style="font-family:var(--font-head);color:var(--cobalt-dark);margin:26px 0 4px">Saved prescriptions</h2>
-    <div id="rxList" class="rx-list"></div><div id="rxEmpty" class="rx-empty">No prescriptions saved in this browser yet.</div>
+    <h2 style="font-family:var(--font-head);color:var(--cobalt-dark);margin:26px 0 4px">Prescription history</h2>
+    <div id="rxList" class="rx-list"></div><div id="rxEmpty" class="rx-empty">No prescriptions are linked to this account yet.</div>
+    <p id="dashboardMessage" class="api-message" role="status" aria-live="polite"></p>
   </div></div>
 </section>
 
@@ -1071,13 +991,14 @@
      build it out — the nav plumbing below won't need to change.
   ---------------------------------------------------------- */
   function navigate(viewName){
+    if (viewName === 'prescriptions' && !getAuthToken()) viewName = 'login';
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     const target = document.getElementById('view-' + viewName);
     if (target) target.classList.add('active');
     window.location.hash = viewName;
     window.scrollTo(0,0);
     if (viewName === 'history') renderSymptomHistory();
-    if (viewName === 'prescriptions') renderRxList();
+    if (viewName === 'prescriptions') loadPatientDashboard();
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -1211,97 +1132,43 @@
     navigate('booking-confirm');
   }
 
-  /* ---------------- login / sign up: tabs + OTP flow ---------------- */
-  const otpStore = {};
-
+  /* ---------------- patient authentication ---------------- */
+  const API_BASE_URL=(window.RAHAT_API_BASE_URL||'').replace(/\/$/,'');
+  const AUTH_TOKEN_KEY='rahat_access_token';
+  function getAuthToken(){return sessionStorage.getItem(AUTH_TOKEN_KEY);}
+  function setAuthToken(token){sessionStorage.setItem(AUTH_TOKEN_KEY,token);}
+  function clearAuthToken(){sessionStorage.removeItem(AUTH_TOKEN_KEY);}
   function switchAuthTab(mode){
-    document.getElementById('tabLoginBtn').classList.toggle('active', mode === 'login');
-    document.getElementById('tabSignupBtn').classList.toggle('active', mode === 'signup');
-    document.getElementById('panel-login').style.display = mode === 'login' ? 'block' : 'none';
-    document.getElementById('panel-signup').style.display = mode === 'signup' ? 'block' : 'none';
+    document.getElementById('tabLoginBtn').classList.toggle('active',mode==='login');
+    document.getElementById('tabSignupBtn').classList.toggle('active',mode==='signup');
+    document.getElementById('panel-login').style.display=mode==='login'?'block':'none';
+    document.getElementById('panel-signup').style.display=mode==='signup'?'block':'none';
+    const msg=document.getElementById('authMessage');if(msg)msg.textContent='';
   }
-
-  function handleOtpInput(e){
-    e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(-1);
-    if (e.target.value && e.target.nextElementSibling && e.target.nextElementSibling.classList.contains('otp-box')){
-      e.target.nextElementSibling.focus();
-    }
+  function showAuthMessage(message,isError=true){const el=document.getElementById('authMessage');if(el){el.textContent=message;el.classList.toggle('error',isError);}}
+  function showDashboardMessage(message,isError=true){const el=document.getElementById('dashboardMessage');if(el){el.textContent=message;el.classList.toggle('error',isError);}}
+  async function apiRequest(path,options={}){
+    if(!API_BASE_URL)throw new Error('The Rahat API URL has not been configured. Deploy the backend before using accounts.');
+    const headers={...(options.headers||{})},token=getAuthToken();
+    if(token)headers.Authorization='Bearer '+token;
+    if(options.body&&!(options.body instanceof FormData))headers['Content-Type']='application/json';
+    const response=await fetch(API_BASE_URL+path,{...options,headers});
+    const data=response.status===204?{}:await response.json().catch(()=>({}));
+    if(response.status===401)clearAuthToken();
+    if(!response.ok)throw new Error(data.error||'The request could not be completed.');
+    return data;
   }
-
-  function handleOtpKeydown(e){
-    if (e.key === 'Backspace' && !e.target.value && e.target.previousElementSibling && e.target.previousElementSibling.classList.contains('otp-box')){
-      e.target.previousElementSibling.focus();
-    }
-  }
-
-  function requestOtp(mode){
-    const email = document.getElementById(mode + 'Email').value.trim();
-    const mobile = document.getElementById(mode + 'Mobile').value.trim();
-
-    if (!email && !mobile){
-      alert('Enter your email or mobile number to get an OTP.');
-      return;
-    }
-    if (mobile && !/^\d{10}$/.test(mobile)){
-      alert('Enter a valid 10-digit mobile number.');
-      return;
-    }
-    if (email && !/^\S+@\S+\.\S+$/.test(email)){
-      alert('Enter a valid email address.');
-      return;
-    }
-
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
-    otpStore[mode] = otp;
-
-    const dest = email && mobile ? (email + ' and ' + mobile) : (email || mobile);
-    // Demo only: no real SMS/email backend is wired up yet, so the OTP is shown here for testing.
-    document.getElementById('otpSentMsg-' + mode).textContent =
-      'OTP sent to ' + dest + '. (Demo mode — your OTP is ' + otp + ')';
-
-    document.getElementById('otpPanel-' + mode).style.display = 'block';
-    document.querySelectorAll('#otpInputs-' + mode + ' .otp-box').forEach(box => box.value = '');
-    const firstBox = document.querySelector('#otpInputs-' + mode + ' .otp-box');
-    if (firstBox) firstBox.focus();
-
-    startResendTimer(mode);
-  }
-
-  function startResendTimer(mode){
-    const btn = document.getElementById('resendBtn-' + mode);
-    let seconds = 30;
-    btn.disabled = true;
-    btn.textContent = 'Resend OTP (' + seconds + 's)';
-    clearInterval(btn._timer);
-    btn._timer = setInterval(() => {
-      seconds -= 1;
-      if (seconds <= 0){
-        clearInterval(btn._timer);
-        btn.disabled = false;
-        btn.textContent = 'Resend OTP';
-      } else {
-        btn.textContent = 'Resend OTP (' + seconds + 's)';
-      }
-    }, 1000);
-  }
-
-  function verifyOtp(mode){
-    const boxes = document.querySelectorAll('#otpInputs-' + mode + ' .otp-box');
-    const entered = Array.from(boxes).map(b => b.value).join('');
-
-    if (entered.length < 6){
-      alert('Enter the full 6-digit OTP.');
-      return;
-    }
-    if (entered !== otpStore[mode]){
-      alert('Incorrect OTP. Please try again.');
-      return;
-    }
-
-    alert(mode === 'login' ? 'Logged in successfully!' : 'Account created successfully!');
-    navigate('home');
-  }
-
+  document.getElementById('loginForm')?.addEventListener('submit',async event=>{
+    event.preventDefault();const button=document.getElementById('loginSubmit');button.disabled=true;showAuthMessage('Signing in...',false);
+    try{const data=await apiRequest('/api/auth/login',{method:'POST',body:JSON.stringify({email:document.getElementById('loginEmail').value.trim(),password:document.getElementById('loginPassword').value})});setAuthToken(data.access_token);event.target.reset();navigate('prescriptions');}
+    catch(error){showAuthMessage(error.message);}finally{button.disabled=false;}
+  });
+  document.getElementById('signupForm')?.addEventListener('submit',async event=>{
+    event.preventDefault();const button=document.getElementById('signupSubmit');button.disabled=true;showAuthMessage('Creating your account...',false);
+    try{const data=await apiRequest('/api/auth/register',{method:'POST',body:JSON.stringify({full_name:document.getElementById('signupName').value.trim(),email:document.getElementById('signupEmail').value.trim(),mobile:document.getElementById('signupMobile').value.trim(),password:document.getElementById('signupPassword').value})});setAuthToken(data.access_token);event.target.reset();navigate('prescriptions');}
+    catch(error){showAuthMessage(error.message);}finally{button.disabled=false;}
+  });
+  function logoutPatient(){clearAuthToken();navigate('home');}
 
   /* ---------------- doctor availability + appointment request ---------------- */
   let selectedDoctorForBooking = { name:'', area:'', hours:'' };
@@ -1603,93 +1470,49 @@
   window.addEventListener('hashchange', syncLangControl);
   syncLangControl();
 
-  /* ---------------- prescription prototype: browser-local IndexedDB ---------------- */
-  const RX_DB_NAME='rahatPrescriptionPrototype', RX_STORE='prescriptions';
-  function openRxDB(){
-    return new Promise((resolve,reject)=>{
-      if(!('indexedDB' in window)){reject(new Error('This browser does not support local database storage.'));return;}
-      const request=indexedDB.open(RX_DB_NAME,1);
-      request.onupgradeneeded=()=>{const db=request.result;if(!db.objectStoreNames.contains(RX_STORE))db.createObjectStore(RX_STORE,{keyPath:'id'});};
-      request.onsuccess=()=>resolve(request.result);
-      request.onerror=()=>reject(request.error||new Error('Could not open local storage.'));
-    });
-  }
-  async function saveRxRecord(record){
-    const db=await openRxDB();
-    return new Promise((resolve,reject)=>{
-      const tx=db.transaction(RX_STORE,'readwrite');tx.objectStore(RX_STORE).put(record);
-      tx.oncomplete=()=>{db.close();resolve();};
-      tx.onerror=()=>{db.close();reject(tx.error||new Error('Could not save record.'));};
-      tx.onabort=()=>{db.close();reject(tx.error||new Error('Save was cancelled.'));};
-    });
-  }
-  async function getRxRecords(){
-    const db=await openRxDB();
-    return new Promise((resolve,reject)=>{
-      const tx=db.transaction(RX_STORE,'readonly'),req=tx.objectStore(RX_STORE).getAll();
-      req.onsuccess=()=>resolve(req.result.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)));
-      req.onerror=()=>reject(req.error||new Error('Could not read records.'));
-      tx.oncomplete=()=>db.close();tx.onerror=()=>{db.close();reject(tx.error);};
-    });
-  }
-  async function deleteRxRecord(id){
-    const db=await openRxDB();
-    return new Promise((resolve,reject)=>{
-      const tx=db.transaction(RX_STORE,'readwrite');tx.objectStore(RX_STORE).delete(id);
-      tx.oncomplete=()=>{db.close();resolve();};tx.onerror=()=>{db.close();reject(tx.error||new Error('Could not delete record.'));};
-    });
-  }
-  function switchRxTab(tab){
-    document.getElementById('rxUploadPanel').classList.toggle('active',tab==='upload');
-    document.getElementById('rxCreatePanel').classList.toggle('active',tab==='create');
-    document.getElementById('rxTabUpload').classList.toggle('active',tab==='upload');
-    document.getElementById('rxTabCreate').classList.toggle('active',tab==='create');
-  }
-  function escapeRxText(value){
-    return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-  }
-  async function renderRxList(){
+  /* ---------------- account-linked patient prescriptions ---------------- */
+  async function loadPatientDashboard(){
+    if(!getAuthToken()){navigate('login');return;}
     const list=document.getElementById('rxList'),empty=document.getElementById('rxEmpty');if(!list||!empty)return;
+    list.innerHTML='';empty.style.display='none';showDashboardMessage('Loading your prescriptions...',false);
     try{
-      const records=await getRxRecords();list.innerHTML='';empty.style.display=records.length?'none':'block';
-      records.forEach(record=>{
-        const card=document.createElement('article');card.className='rx-card';
-        const kind=record.kind==='upload'?'Uploaded copy':'Prescription draft';
-        const details=record.kind==='upload'
-          ? 'Doctor / clinic: '+escapeRxText(record.doctor||'Not provided')+'<br>File: '+escapeRxText(record.fileName||'Attached file')+'<br>Notes: '+escapeRxText(record.notes||'None')
-          : 'Doctor: '+escapeRxText(record.doctor)+'<br>Diagnosis: '+escapeRxText(record.diagnosis||'Not entered')+'<br>Medicine: '+escapeRxText(record.medicine)+' — '+escapeRxText(record.dosage)+'<br>Frequency: '+escapeRxText(record.frequency)+'<br>Duration: '+escapeRxText(record.duration)+'<br>Instructions: '+escapeRxText(record.instructions||'None');
-        card.innerHTML='<div class="rx-card-top"><div><h3>'+escapeRxText(record.patient)+'</h3><div class="rx-meta">'+kind+' · '+escapeRxText(record.date)+'</div></div><div class="rx-actions"><button class="rx-secondary" data-rx-action="view">View / Print</button><button class="rx-secondary" data-rx-action="delete">Delete</button></div></div><div class="rx-meta" style="margin-top:10px">'+details+'</div>';
-        card.querySelector('[data-rx-action="view"]').addEventListener('click',()=>viewRxRecord(record));
-        card.querySelector('[data-rx-action="delete"]').addEventListener('click',async()=>{if(!confirm('Delete this saved prescription from this browser?'))return;try{await deleteRxRecord(record.id);await renderRxList();}catch(error){alert(error.message);}});
-        list.appendChild(card);
-      });
-    }catch(error){empty.style.display='block';empty.textContent='Local storage error: '+error.message;}
+      const [profile,data]=await Promise.all([apiRequest('/api/me'),apiRequest('/api/prescriptions')]);
+      document.getElementById('patientWelcome').textContent='Welcome, '+profile.user.full_name+'. These records are linked to your account.';
+      renderPatientPrescriptions(data.prescriptions||[]);showDashboardMessage('',false);
+    }catch(error){if(!getAuthToken()){navigate('login');showAuthMessage('Your session expired. Please sign in again.');return;}showDashboardMessage(error.message);}
   }
-  function viewRxRecord(record){
-    if(record.kind==='upload'&&record.file){
-      const url=URL.createObjectURL(record.file),win=window.open(url,'_blank');
-      if(!win){URL.revokeObjectURL(url);alert('Allow pop-ups to view this file.');}else setTimeout(()=>URL.revokeObjectURL(url),60000);
-      return;
-    }
-    const printWindow=window.open('','_blank');if(!printWindow){alert('Allow pop-ups to print this draft.');return;}
-    const esc=escapeRxText;
-    printWindow.document.write('<!doctype html><html><head><title>Prescription draft</title><style>body{font:15px Arial,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;color:#17233b}h1{color:#003380}hr{margin:22px 0}p{line-height:1.6}.note{margin-top:35px;font-size:12px;color:#7a4d00}</style></head><body><h1>Prescription draft</h1><p><b>Patient:</b> '+esc(record.patient)+' &nbsp; <b>Age:</b> '+esc(record.age||'Not provided')+'</p><p><b>Doctor:</b> '+esc(record.doctor)+' &nbsp; <b>Date:</b> '+esc(record.date)+'</p><hr><p><b>Diagnosis / reason:</b> '+esc(record.diagnosis||'Not entered')+'</p><h2>Medicine details</h2><p><b>Medicine:</b> '+esc(record.medicine)+'</p><p><b>Dosage:</b> '+esc(record.dosage)+'</p><p><b>Frequency:</b> '+esc(record.frequency)+'</p><p><b>Duration:</b> '+esc(record.duration)+'</p><p><b>Instructions:</b> '+esc(record.instructions||'None')+'</p><hr><p class="note">DEMO DRAFT ONLY — not a valid prescription and not medical advice. Must be reviewed and authorized by a qualified clinician.</p><script>window.onload=()=>window.print();<\\/script></body></html>');
-    printWindow.document.close();
+  function renderPatientPrescriptions(records){
+    const list=document.getElementById('rxList'),empty=document.getElementById('rxEmpty');list.innerHTML='';empty.style.display=records.length?'none':'block';
+    records.forEach(record=>{
+      const card=document.createElement('article');card.className='rx-card';const top=document.createElement('div');top.className='rx-card-top';
+      const details=document.createElement('div'),heading=document.createElement('h3');heading.textContent=record.filename;
+      const meta=document.createElement('div');meta.className='rx-meta';meta.textContent='Uploaded '+(record.created_at?new Date(record.created_at).toLocaleString('en-IN'):'date unavailable');details.append(heading,meta);
+      const actions=document.createElement('div');actions.className='rx-actions';
+      const view=document.createElement('button');view.className='rx-secondary';view.type='button';view.textContent='View / Download';view.addEventListener('click',()=>downloadPatientPrescription(record.id,record.filename));
+      const remove=document.createElement('button');remove.className='rx-secondary';remove.type='button';remove.textContent='Delete';remove.addEventListener('click',()=>deletePatientPrescription(record.id));
+      actions.append(view,remove);top.append(details,actions);card.append(top);list.append(card);
+    });
+  }
+  async function downloadPatientPrescription(id,filename){
+    try{
+      const response=await fetch(API_BASE_URL+'/api/prescriptions/'+id+'/file',{headers:{Authorization:'Bearer '+getAuthToken()}});
+      if(response.status===401){clearAuthToken();navigate('login');return;}
+      if(!response.ok)throw new Error('Could not open this prescription.');
+      const blob=await response.blob(),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+    }catch(error){showDashboardMessage(error.message);}
+  }
+  async function deletePatientPrescription(id){
+    if(!confirm('Delete this prescription from your account?'))return;
+    try{await apiRequest('/api/prescriptions/'+id,{method:'DELETE'});await loadPatientDashboard();}
+    catch(error){showDashboardMessage(error.message);}
   }
   document.getElementById('rxUploadForm')?.addEventListener('submit',async event=>{
     event.preventDefault();const file=document.getElementById('rxUploadFile').files[0];if(!file)return;
-    if(file.size>8*1024*1024){alert('Choose a file smaller than 8 MB for this browser prototype.');return;}
-    const record={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),kind:'upload',patient:document.getElementById('rxUploadPatient').value.trim(),doctor:document.getElementById('rxUploadDoctor').value.trim(),date:document.getElementById('rxUploadDate').value,fileName:file.name,file:file,notes:document.getElementById('rxUploadNotes').value.trim(),createdAt:new Date().toISOString()};
-    try{await saveRxRecord(record);event.target.reset();await renderRxList();alert('Uploaded copy saved in this browser.');}catch(error){alert('Could not save: '+error.message);}
+    if(file.size>8*1024*1024){showDashboardMessage('Choose a file smaller than 8 MB.');return;}
+    const formData=new FormData();formData.append('file',file);const button=event.target.querySelector('button[type="submit"]');button.disabled=true;showDashboardMessage('Uploading prescription...',false);
+    try{await apiRequest('/api/prescriptions',{method:'POST',body:formData});event.target.reset();await loadPatientDashboard();showDashboardMessage('Prescription uploaded to your account.',false);}
+    catch(error){showDashboardMessage(error.message);}finally{button.disabled=false;}
   });
-  document.getElementById('rxCreateForm')?.addEventListener('submit',async event=>{
-    event.preventDefault();
-    const record={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),kind:'draft',patient:document.getElementById('rxPatient').value.trim(),age:document.getElementById('rxAge').value,doctor:document.getElementById('rxDoctor').value.trim(),date:document.getElementById('rxDate').value,diagnosis:document.getElementById('rxDiagnosis').value.trim(),medicine:document.getElementById('rxMedicine').value.trim(),dosage:document.getElementById('rxDosage').value.trim(),frequency:document.getElementById('rxFrequency').value.trim(),duration:document.getElementById('rxDuration').value.trim(),instructions:document.getElementById('rxInstructions').value.trim(),createdAt:new Date().toISOString()};
-    try{await saveRxRecord(record);event.target.reset();await renderRxList();alert('Prescription draft saved in this browser.');}catch(error){alert('Could not save: '+error.message);}
-  });
-  const rxToday=new Date().toISOString().slice(0,10);
-  document.getElementById('rxUploadDate').value=rxToday;document.getElementById('rxDate').value=rxToday;
-  renderRxList();
 
 </script>
 
