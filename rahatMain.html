@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rural Health Triage</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --white:#FFFFFF; --mist:#EAF1FB; --line:#D7E3F5;
+    --cobalt:#0047AB; --cobalt-dark:#003380;
+    --teal:#0E9594; --teal-tint:#E3F5F4;
+    --amber:#D98A1F; --amber-tint:#FBF0DE;
+    --violet:#6C4AB6; --violet-tint:#EFE9FB;
+    --ink:#14213D; --ink-soft:#4C5C7A;
+    --font-head:'Space Grotesk',sans-serif; --font-body:'Inter',sans-serif; --radius:10px;
+    --shadow: 0 6px 16px rgba(20,33,61,0.08);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; min-height:100%; background:var(--white); color:var(--ink); font-family:var(--font-body); }
+  a{ text-decoration:none; color:inherit; }
+  button{ font-family:inherit; cursor:pointer; }
+
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  /* ---------- block button (home) ---------- */
+  .block-btn{
+    display:flex; align-items:center; gap:12px; width:100%; height:100%;
+    background:var(--white); border:1.5px solid var(--line); border-left:4px solid var(--accent, var(--cobalt));
+    border-radius:var(--radius); padding:14px 18px;
+    box-shadow:var(--shadow); transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .block-btn:hover{ transform:translateY(-2px); box-shadow:0 10px 20px rgba(20,33,61,0.12); }
+  .block-btn:focus-visible{ outline:2px solid var(--cobalt); outline-offset:2px; }
+  .block-btn .icon-chip{
+    width:34px; height:34px; border-radius:50%; flex:none;
+    background:var(--accent-tint, var(--mist)); display:flex; align-items:center; justify-content:center;
+  }
+  .block-btn .icon-chip svg{ width:18px; height:18px; }
+  .block-btn .text-col{ display:flex; flex-direction:column; gap:2px; text-align:left; }
+  .block-btn .label{ font-family:var(--font-head); font-weight:600; font-size:0.98rem; display:flex; align-items:center; }
+  .block-btn .sub{ font-size:0.82rem; color:var(--ink-soft); }
+  .status-dot{ width:8px; height:8px; border-radius:50%; background:#1E9E5A; display:inline-block; margin-right:6px; }
+  .doctors{ --accent:var(--teal); --accent-tint:var(--teal-tint); }
+  .history{ --accent:var(--amber); --accent-tint:var(--amber-tint); }
+  .auth{ --accent:var(--cobalt); --accent-tint:var(--mist); }
+  .facility{ --accent:var(--violet); --accent-tint:var(--violet-tint); }
+
+  /* ---------- home layout ---------- */
+  .page{
+    display:grid; grid-template-columns:1fr; grid-template-rows:auto auto auto;
+    grid-template-areas:"top" "hero" "blocks";
+    min-height:100vh; padding:28px 40px; gap:20px;
+  }
+  .blocks-row{
+    grid-area:blocks; display:grid; grid-template-columns:repeat(4, 1fr); gap:20px; align-items:stretch;
+  }
+  .top-bar{ grid-area:top; display:flex; justify-content:space-between; align-items:flex-start; }
+  .partner-logo{ height:40px; width:auto; }
+  .partner-logo-fallback{
+    display:none; align-items:center; height:40px; font-family:var(--font-head);
+    font-weight:700; font-size:1.1rem; color:var(--cobalt-dark); letter-spacing:-0.01em;
+  }
+  .top-right{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .lang-select{ border:1.5px solid var(--line); border-radius:var(--radius); padding:8px 12px; font-size:0.85rem; background:var(--white); color:var(--ink); }
+  .lang-select:focus-visible{ outline:2px solid var(--cobalt); }
+  .global-lang-wrap{position:fixed;top:16px;right:16px;z-index:9999;display:none}
+  body.inside-view .global-lang-wrap{display:block}
+  .global-lang-wrap .lang-select{box-shadow:var(--shadow)}
+  .hero{
+    grid-area:hero; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+    background:radial-gradient(ellipse at 50% 35%, var(--mist) 0%, rgba(234,241,251,0) 65%);
+    border-radius:20px;
+  }
+  .title-row{ display:flex; align-items:center; justify-content:center; }
+  .title-row h1{ font-family:var(--font-head); font-weight:700; font-size:clamp(2.2rem,5vw,3.6rem); color:var(--cobalt-dark); margin:0; letter-spacing:-0.01em; }
+  .shlok{
+    margin:12px 0 0; max-width:900px; padding:0 16px;
+    font-family:Georgia, 'Noto Serif Devanagari', serif;
+    font-size:clamp(1rem,2vw,1.3rem); font-weight:600;
+    line-height:1.8; color:var(--cobalt-dark); letter-spacing:0.01em;
+  }
+  .badge{ font-size:0.95rem; font-weight:600; color:var(--cobalt); background:var(--mist); border:1.5px solid var(--cobalt); border-radius:var(--radius); padding:8px 20px; white-space:nowrap; }
+  .tagline{ color:var(--ink-soft); font-size:0.95rem; margin-top:10px; }
+  .cta-symptom{
+    margin-top:56px; background:linear-gradient(135deg, var(--cobalt), var(--cobalt-dark)); color:var(--white);
+    border:none; border-radius:var(--radius); padding:16px 34px; font-family:var(--font-head); font-weight:600;
+    font-size:1.05rem; box-shadow:0 10px 24px rgba(0,71,171,0.28); transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .cta-symptom:hover{ transform:translateY(-2px); box-shadow:0 14px 28px rgba(0,71,171,0.34); }
+  .cta-symptom:focus-visible{ outline:2px solid var(--cobalt-dark); outline-offset:3px; }
+  @media (max-width:900px){
+    .blocks-row{ grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:520px){
+    .page{ padding:20px; }
+    .blocks-row{ grid-template-columns:1fr; }
+  }
+
+  /* ---------- placeholder sub-pages (built out in later tasks) ---------- */
+  .stub-shell{
+    min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:18px; text-align:center; padding:32px; background:var(--mist);
+  }
+  .stub-shell h1{ font-family:var(--font-head); color:var(--cobalt-dark); margin:0; }
+  .stub-shell p{ color:var(--ink-soft); max-width:420px; margin:0; }
+  .back-link{ margin-top:10px; font-weight:600; color:var(--cobalt); border:1.5px solid var(--cobalt); padding:9px 18px; border-radius:var(--radius); }
+  .back-link:hover{ background:var(--cobalt); color:var(--white); }
+
+  /* ---------- symptom form ---------- */
+  .form-shell{
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    padding:40px 24px 60px; background:var(--white);
+  }
+  .form-card{ width:100%; max-width:560px; }
+  .form-card h1{ font-family:var(--font-head); color:var(--cobalt-dark); margin:0 0 6px; font-size:1.8rem; }
+  .form-card > p{ color:var(--ink-soft); margin:0 0 26px; }
+  .field-label{ font-family:var(--font-head); font-weight:600; font-size:0.9rem; margin:22px 0 10px; display:block; }
+  .symptom-textarea{
+    width:100%; min-height:90px; border:1.5px solid var(--line); border-radius:var(--radius);
+    padding:12px 14px; font-family:var(--font-body); font-size:0.95rem; color:var(--ink); resize:vertical;
+  }
+  .symptom-textarea:focus-visible{ outline:2px solid var(--cobalt); }
+  .issue-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:10px; }
+  .issue-chip{
+    background:var(--white); border:1.5px solid var(--line); border-radius:var(--radius);
+    padding:10px 12px; font-size:0.88rem; color:var(--ink); text-align:left; transition:all .15s ease;
+  }
+  .issue-chip:hover{ border-color:var(--cobalt); }
+  .issue-chip.selected{ background:var(--mist); border-color:var(--cobalt); color:var(--cobalt-dark); font-weight:600; }
+  .issue-group-label{ font-size:0.75rem; text-transform:none; color:var(--ink-soft); margin:18px 0 8px; }
+  .detail-panel{ display:none; margin-top:8px; background:var(--mist); border-radius:var(--radius); padding:18px 18px 4px; }
+  .detail-panel.visible{ display:block; }
+  .detail-field{ margin-bottom:16px; }
+  .detail-field label{ display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; }
+  .detail-field select, .detail-field input{
+    width:100%; border:1.5px solid var(--line); border-radius:var(--radius);
+    padding:10px 12px; font-family:var(--font-body); font-size:0.9rem; color:var(--ink); background:var(--white);
+  }
+  .detail-field select:focus-visible, .detail-field input:focus-visible{ outline:2px solid var(--cobalt); }
+  .form-actions{ margin-top:30px; display:flex; justify-content:center; }
+  .btn-primary{
+    background:linear-gradient(135deg, var(--cobalt), var(--cobalt-dark)); color:var(--white); border:none;
+    border-radius:var(--radius); padding:15px 36px; font-family:var(--font-head); font-weight:600; font-size:1rem;
+    box-shadow:0 10px 24px rgba(0,71,171,0.28); transition:transform .15s ease;
+  }
+  .btn-primary:hover{ transform:translateY(-2px); }
+  .form-top-nav{ width:100%; max-width:560px; margin-bottom:10px; }
+
+  /* ---------- auth: login / sign up tabs + OTP ---------- */
+  .auth-card{ }
+  .auth-tabs{
+    display:flex; background:var(--mist); border-radius:var(--radius); padding:5px; gap:5px; margin-bottom:26px;
+  }
+  .auth-tab{
+    flex:1; border:none; background:transparent; border-radius:calc(var(--radius) - 3px);
+    padding:11px 10px; font-family:var(--font-head); font-weight:600; font-size:0.95rem; color:var(--ink-soft);
+    transition:all .15s ease;
+  }
+  .auth-tab.active{ background:var(--white); color:var(--cobalt-dark); box-shadow:var(--shadow); }
+  .auth-tab:focus-visible{ outline:2px solid var(--cobalt); outline-offset:2px; }
+  .auth-panel h1{ font-family:var(--font-head); color:var(--cobalt-dark); margin:0 0 6px; font-size:1.5rem; }
+  .auth-panel > p{ color:var(--ink-soft); margin:0 0 20px; font-size:0.9rem; }
+  .auth-input{
+    width:100%; border:1.5px solid var(--line); border-radius:var(--radius);
+    padding:12px 14px; font-family:var(--font-body); font-size:0.95rem; color:var(--ink); background:var(--white);
+  }
+  .auth-input:focus-visible{ outline:2px solid var(--cobalt); }
+  .otp-panel{ margin-top:22px; background:var(--mist); border-radius:var(--radius); padding:18px; }
+  .otp-sent-msg{ font-size:0.85rem; color:var(--ink-soft); margin:0 0 14px; }
+  .otp-inputs{ display:flex; gap:8px; margin-bottom:16px; }
+  .otp-box{
+    width:100%; max-width:46px; height:52px; text-align:center; font-size:1.25rem; font-weight:600;
+    border:1.5px solid var(--line); border-radius:var(--radius); color:var(--ink); background:var(--white);
+  }
+  .otp-box:focus-visible{ outline:2px solid var(--cobalt); }
+  .otp-actions{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .resend-link{ background:none; border:none; color:var(--cobalt); font-weight:600; font-size:0.85rem; }
+  .resend-link:disabled{ color:var(--ink-soft); opacity:0.7; cursor:default; }
+  .auth-switch-hint{ text-align:center; font-size:0.85rem; color:var(--ink-soft); margin-top:20px; }
+  .auth-switch-hint button{ background:none; border:none; color:var(--cobalt); font-weight:600; padding:0; }
+
+  /* ---------- result view ---------- */
+  .result-shell{ min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:48px 24px; background:var(--mist); }
+  .result-card{
+    width:100%; max-width:480px; background:var(--white); border-radius:16px; padding:34px 30px;
+    box-shadow:var(--shadow); text-align:center;
+  }
+  .severity-banner{ border-radius:var(--radius); padding:14px 16px; font-weight:600; font-family:var(--font-head); margin-bottom:18px; }
+  .severity-banner.mild{ background:#E6F6EC; color:#1E7A3D; }
+  .severity-banner.moderate{ background:var(--amber-tint); color:#9A5E10; }
+  .severity-banner.serious{ background:#FBE7E4; color:#B4321C; }
+  .stars{ font-size:1.8rem; letter-spacing:4px; margin:6px 0 4px; }
+  .stars .filled{ color:#E8A33D; }
+  .stars .empty{ color:var(--line); }
+  .rating-caption{ color:var(--ink-soft); font-size:0.85rem; margin-bottom:22px; }
+  .result-summary{ text-align:left; background:var(--mist); border-radius:var(--radius); padding:14px 16px; font-size:0.9rem; color:var(--ink-soft); margin-bottom:24px; }
+  .result-summary strong{ color:var(--ink); }
+
+  /* ---------- symptom history ---------- */
+  .history-shell{
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    padding:40px 24px 60px; background:var(--white);
+  }
+  .history-nav,.history-head,.history-list,.history-empty{width:100%;max-width:760px}
+  .history-head{margin-bottom:18px}
+  .history-head h1{font-family:var(--font-head);color:var(--cobalt-dark);margin:0 0 6px;font-size:1.9rem}
+  .history-head p{color:var(--ink-soft);margin:0 0 12px;font-size:.94rem}
+  .history-clear{
+    border:1.5px solid var(--line); background:var(--white); color:var(--ink-soft);
+    border-radius:var(--radius); padding:8px 12px; font-size:.82rem;
+  }
+  .history-list{display:grid;gap:12px}
+  .history-entry{
+    border:1.5px solid var(--line); border-left:4px solid var(--amber);
+    border-radius:12px; padding:15px 16px; box-shadow:var(--shadow); background:var(--white);
+  }
+  .history-entry-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .history-issue{font-family:var(--font-head);font-weight:700;color:var(--ink)}
+  .history-time{font-size:.78rem;color:var(--ink-soft);white-space:nowrap}
+  .history-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:.8rem;color:var(--ink-soft)}
+  .history-pill{background:var(--amber-tint);padding:5px 8px;border-radius:999px}
+  .history-details{margin-top:9px;font-size:.8rem;color:var(--ink-soft);line-height:1.45}
+  .history-empty{
+    border:1.5px dashed var(--line); border-radius:12px; padding:24px;
+    text-align:center; color:var(--ink-soft); display:flex; flex-direction:column; gap:5px;
+  }
+
+  /* ---------- local diagnostic labs ---------- */
+  .lab-directory{
+    width:100%; max-width:760px; margin-top:28px;
+    border-top:1.5px solid var(--line); padding-top:26px;
+  }
+  .lab-directory h2{font-family:var(--font-head);color:var(--cobalt-dark);margin:0 0 6px;font-size:1.35rem}
+  .lab-directory > p{color:var(--ink-soft);font-size:.86rem;margin:0 0 14px}
+  .lab-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .lab-filter{
+    border:1.5px solid var(--line);border-radius:var(--radius);padding:10px 12px;
+    background:var(--white);color:var(--ink);font-family:var(--font-body);font-size:.88rem;
+  }
+  .lab-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:15px}
+  .lab-card{
+    border:1.5px solid var(--line);border-top:4px solid var(--violet);border-radius:13px;
+    padding:18px;box-shadow:var(--shadow);background:var(--white);
+  }
+  .lab-card h3{font-family:var(--font-head);margin:0 0 6px;font-size:1rem}
+  .lab-area{font-size:.78rem;font-weight:600;color:var(--violet);margin-bottom:8px}
+  .lab-card p{font-size:.8rem;color:var(--ink-soft);line-height:1.45;margin:0 0 13px}
+  .lab-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .lab-actions a,.lab-actions button{
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    border:none;border-radius:var(--radius);padding:10px 8px;font-family:var(--font-head);
+    font-weight:600;font-size:.78rem;text-decoration:none;cursor:pointer;
+  }
+  .lab-call{background:var(--violet);color:var(--white)!important}
+  .lab-book{background:var(--violet-tint);color:var(--violet)}
+  .lab-note{font-size:.74rem;color:var(--ink-soft);margin-top:12px}
+
+  /* ---------- facility (home-visit diagnostics) ---------- */
+  .facility-shell{ min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:40px 24px 60px; background:var(--white); }
+  .facility-nav{ width:100%; max-width:760px; margin-bottom:10px; }
+  .facility-head{ width:100%; max-width:760px; margin-bottom:8px; }
+  .facility-head h1{ font-family:var(--font-head); color:var(--cobalt-dark); margin:0 0 6px; font-size:1.9rem; letter-spacing:-0.01em; }
+  .facility-head p{ color:var(--ink-soft); margin:0 0 30px; font-size:0.96rem; }
+  .facility-grid{ width:100%; max-width:760px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:20px; }
+  .facility-card{
+    display:flex; flex-direction:column;
+    background:var(--white); border:1.5px solid var(--line); border-top:4px solid var(--violet);
+    border-radius:14px; padding:22px; box-shadow:var(--shadow); text-align:left;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .facility-card:hover{ transform:translateY(-3px); box-shadow:0 14px 28px rgba(20,33,61,0.12); }
+  .facility-card .icon-chip{ width:42px; height:42px; border-radius:50%; background:var(--violet-tint); display:flex; align-items:center; justify-content:center; margin-bottom:16px; }
+  .facility-card .icon-chip svg{ width:21px; height:21px; }
+  .facility-card h3{ font-family:var(--font-head); margin:0 0 8px; font-size:1.08rem; line-height:1.3; }
+  .facility-card p{ color:var(--ink-soft); font-size:0.87rem; line-height:1.5; margin:0 0 20px; flex:1; }
+  .facility-card button{
+    width:100%; background:var(--violet); color:var(--white); border:none; border-radius:var(--radius);
+    padding:12px 16px; font-family:var(--font-head); font-weight:600; font-size:0.9rem; transition:opacity .15s ease;
+  }
+  .facility-card button:hover{ opacity:0.88; }
+
+  /* ---------- booking form + confirmation ---------- */
+  .service-tag{
+    display:inline-block; background:var(--violet-tint); color:var(--violet); font-weight:600;
+    font-size:0.8rem; padding:6px 14px; border-radius:999px; margin-bottom:14px;
+  }
+  .booking-field{ margin-bottom:18px; }
+  .booking-field label{ display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px; }
+  .booking-field select, .booking-field input{
+    width:100%; border:1.5px solid var(--line); border-radius:var(--radius);
+    padding:11px 13px; font-family:var(--font-body); font-size:0.92rem; color:var(--ink); background:var(--white);
+  }
+  .booking-field select:focus-visible, .booking-field input:focus-visible{ outline:2px solid var(--violet); }
+  .btn-violet{
+    background:var(--violet); color:var(--white); border:none; border-radius:var(--radius);
+    padding:15px 36px; font-family:var(--font-head); font-weight:600; font-size:1rem;
+    box-shadow:0 10px 24px rgba(108,74,182,0.28); transition:transform .15s ease;
+  }
+  .btn-violet:hover{ transform:translateY(-2px); }
+  .confirm-check{
+    width:52px; height:52px; border-radius:50%; background:var(--violet-tint); color:var(--violet);
+    display:flex; align-items:center; justify-content:center; font-size:1.6rem; margin:0 auto 16px;
+  }
+  .confirm-heading{ font-family:var(--font-head); color:var(--cobalt-dark); margin:0 0 10px; font-size:1.4rem; }
+
+  /* ---------- doctor availability ---------- */
+  .doctor-shell{
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    padding:40px 24px 60px; background:var(--white);
+  }
+  .doctor-nav{ width:100%; max-width:980px; margin-bottom:10px; }
+  .doctor-head{ width:100%; max-width:980px; margin-bottom:18px; }
+  .doctor-head h1{
+    font-family:var(--font-head); color:var(--cobalt-dark); margin:0 0 6px;
+    font-size:1.9rem; letter-spacing:-0.01em;
+  }
+  .doctor-head p{ color:var(--ink-soft); margin:0; font-size:.95rem; }
+  .doctor-toolbar{
+    width:100%; max-width:980px; display:flex; gap:12px; flex-wrap:wrap;
+    margin-bottom:20px; align-items:center;
+  }
+  .doctor-filter{
+    border:1.5px solid var(--line); border-radius:var(--radius); padding:10px 12px;
+    background:var(--white); color:var(--ink); font-family:var(--font-body); font-size:.9rem;
+  }
+  .doctor-location{
+    color:var(--ink-soft); font-size:.85rem; padding:9px 12px; background:var(--mist);
+    border-radius:var(--radius);
+  }
+  .doctor-grid{
+    width:100%; max-width:980px; display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px;
+  }
+  .doctor-card{
+    background:var(--white); border:1.5px solid var(--line); border-top:4px solid var(--teal);
+    border-radius:14px; padding:20px; box-shadow:var(--shadow); text-align:left;
+  }
+  .doctor-card-top{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+  .doctor-avatar{
+    width:46px; height:46px; border-radius:50%; background:var(--teal-tint); color:var(--teal);
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-head);
+    font-weight:700; flex:none;
+  }
+  .doctor-card h3{ font-family:var(--font-head); margin:0 0 4px; font-size:1.05rem; }
+  .doctor-specialty{ color:var(--ink-soft); font-size:.84rem; margin:0 0 12px; }
+  .availability-badge{
+    display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:5px 9px;
+    font-size:.75rem; font-weight:600; background:#E6F6EC; color:#1E7A3D; white-space:nowrap;
+  }
+  .availability-badge .status-dot{ margin:0; width:7px; height:7px; }
+  .doctor-meta{ display:grid; gap:7px; margin:12px 0 16px; font-size:.82rem; color:var(--ink-soft); }
+  .doctor-meta strong{ color:var(--ink); }
+  .appointment-btn{
+    width:100%; background:var(--teal); color:var(--white); border:none; border-radius:var(--radius);
+    padding:12px 16px; font-family:var(--font-head); font-weight:600; font-size:.9rem;
+  }
+  .appointment-btn:hover{ opacity:.9; }
+  .doctor-note{
+    width:100%; max-width:980px; margin-top:18px; color:var(--ink-soft); font-size:.78rem;
+    background:var(--mist); border-radius:var(--radius); padding:12px 14px;
+  }
+  .appointment-panel{
+    width:100%; max-width:560px; background:var(--white); border:1.5px solid var(--line);
+    border-top:4px solid var(--teal); border-radius:14px; padding:24px; box-shadow:var(--shadow);
+  }
+  .appointment-panel h1{ font-family:var(--font-head); color:var(--cobalt-dark); margin:0 0 6px; }
+  .appointment-panel > p{ color:var(--ink-soft); margin:0 0 20px; font-size:.9rem; }
+  .selected-doctor{
+    background:var(--teal-tint); border-radius:var(--radius); padding:12px 14px; margin-bottom:20px;
+    font-size:.88rem;
+  }
+  .appointment-field{ margin-bottom:16px; }
+  .appointment-field label{ display:block; font-size:.84rem; font-weight:600; margin-bottom:6px; }
+  .appointment-field input,.appointment-field select{
+    width:100%; border:1.5px solid var(--line); border-radius:var(--radius); padding:11px 13px;
+    font-family:var(--font-body); font-size:.9rem; color:var(--ink); background:var(--white);
+  }
+  .appointment-field input:focus-visible,.appointment-field select:focus-visible{ outline:2px solid var(--teal); }
+  .appointment-actions{ display:flex; justify-content:center; margin-top:22px; }
+  .appointment-confirm{
+    background:var(--teal); color:var(--white); border:none; border-radius:var(--radius);
+    padding:14px 30px; font-family:var(--font-head); font-weight:600;
+  }
+  .appointment-confirm:hover{ opacity:.9; }
+  .appointment-success{
+    text-align:center; background:var(--teal-tint); border-radius:var(--radius); padding:18px;
+    color:var(--ink); margin-top:16px;
+  }
+  @media(max-width:600px){
+    .doctor-shell{padding:28px 18px 50px}
+    .doctor-grid{grid-template-columns:1fr}
+  }
+
+</style>
+</head>
+<body>
+  <div class="global-lang-wrap" id="globalLangWrap">
+    <select class="lang-select" id="globalLangSelect" aria-label="Change language">
+      <option value="en">English</option>
+      <option value="mr">मराठी</option>
+      <option value="hi">हिन्दी</option>
+    </select>
+  </div>
+
+<!-- ================= HOME ================= -->
+<section id="view-home" class="view active">
+  <div class="page">
+    <div class="top-bar">
+      <img class="partner-logo" src="https://www.bharatcares.org/assets/img/logo/logo-png.png" alt="BharatCares"
+           onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex';">
+      <span class="partner-logo-fallback" id="logoFallback">BharatCares</span>
+      <div class="top-right">
+        <span class="badge">Team Gladiator</span>
+        <select class="lang-select" id="langSelect" aria-label="Change language">
+          <option value="en">English</option>
+          <option value="mr">मराठी</option>
+          <option value="hi">हिन्दी</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="title-row">
+        <h1 data-i18n="title">Rural Health Triage</h1>
+      </div>
+      <div class="shlok" aria-label="Bhagavad Gita verse">
+        युक्ताहारविहारस्य युक्तचेष्टस्य कर्मसु ।<br>
+        युक्तस्वप्नावबोधस्य योगो भवति दुःखहा ॥
+      </div>
+      <p class="tagline" data-i18n="tagline">Quick symptom check-in for your local health center</p>
+      <button class="cta-symptom" data-i18n="cta" onclick="navigate('symptom-form')">Enter your health issue</button>
+    </div>
+
+    <div class="blocks-row">
+      <button class="block-btn doctors" onclick="navigate('doctors')">
+        <span class="icon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="#0E9594" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v6a4 4 0 0 0 8 0V3"/><path d="M18 8v3a6 6 0 0 1-12 0V8"/><circle cx="19" cy="6" r="2"/></svg></span>
+        <span class="text-col">
+          <span class="label" data-i18n="doctorsLabel"><span class="status-dot"></span>Doctor availability</span>
+          <span class="sub" data-i18n="doctorsSub">See who's on duty near you</span>
+        </span>
+      </button>
+
+      <button class="block-btn history" onclick="navigate('history')">
+        <span class="icon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="#D98A1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+        <span class="text-col">
+          <span class="label" data-i18n="historyLabel">Your symptom history</span>
+          <span class="sub" data-i18n="historySub">Past check-ins and results</span>
+        </span>
+      </button>
+
+      <button class="block-btn facility" onclick="navigate('facility')">
+        <span class="icon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="#6C4AB6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></svg></span>
+        <span class="text-col">
+          <span class="label">Home visit diagnostics</span>
+          <span class="sub">Book a lab test at your doorstep</span>
+        </span>
+      </button>
+
+      <button class="block-btn auth" onclick="navigate('login')">
+        <span class="icon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="#0047AB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
+        <span class="text-col">
+          <span class="label" data-i18n="authLabel">Login / Sign up</span>
+          <span class="sub" data-i18n="authSub">Save your history across visits</span>
+        </span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PLACEHOLDER VIEWS (built out in upcoming tasks) ================= -->
+<section id="view-login" class="view">
+  <div class="form-shell">
+    <div class="form-top-nav">
+      <button class="back-link" onclick="navigate('home')">&larr; Back to home</button>
+    </div>
+    <div class="form-card auth-card">
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLoginBtn" onclick="switchAuthTab('login')">Login</button>
+        <button class="auth-tab" id="tabSignupBtn" onclick="switchAuthTab('signup')">Sign Up</button>
+      </div>
+
+      <!-- ---- LOGIN PANEL ---- -->
+      <div class="auth-panel" id="panel-login">
+        <h1>Welcome back</h1>
+        <p>Login with your email or mobile number</p>
+
+        <span class="field-label">Email address</span>
+        <input type="email" class="auth-input" id="loginEmail" placeholder="you@example.com">
+
+        <span class="field-label">Mobile number</span>
+        <input type="tel" class="auth-input" id="loginMobile" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric">
+
+        <div class="form-actions">
+          <button class="btn-primary" onclick="requestOtp('login')">Get OTP</button>
+        </div>
+
+        <div class="otp-panel" id="otpPanel-login" style="display:none;">
+          <p class="otp-sent-msg" id="otpSentMsg-login"></p>
+          <div class="otp-inputs" id="otpInputs-login">
+            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
+            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
+            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
+            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
+            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
+            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
+          </div>
+          <div class="otp-actions">
+            <button class="btn-primary" onclick="verifyOtp('login')">Verify &amp; Login</button>
+            <button class="resend-link" id="resendBtn-login" onclick="requestOtp('login', true)" disabled>Resend OTP</button>
+          </div>
+        </div>
+
+        <p class="auth-switch-hint">New here? <button onclick="switchAuthTab('signup')">Create an account</button></p>
+      </div>
+
+      <!-- ---- SIGN UP PANEL ---- -->
+      <div class="auth-panel" id="panel-signup" style="display:none;">
+        <h1>Create your account</h1>
+        <p>Sign up with your email or mobile number</p>
+
+        <span class="field-label">Email address</span>
+        <input type="email" class="auth-input" id="signupEmail" placeholder="you@example.com">
+
+        <span class="field-label">Mobile number</span>
+        <input type="tel" class="auth-input" id="signupMobile" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric">
+
+        <div class="form-actions">
+          <button class="btn-primary" onclick="requestOtp('signup')">Get OTP</button>
+        </div>
+
+        <div class="otp-panel" id="otpPanel-signup" style="display:none;">
+          <p class="otp-sent-msg" id="otpSentMsg-signup"></p>
+          <div class="otp-inputs" id="otpInputs-signup">
+            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
+            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
+            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
+            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
+            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
+            <input type="text" class="otp-box" maxlength="1" inputmode="numeric" oninput="handleOtpInput(event)" onkeydown="handleOtpKeydown(event)">
+          </div>
+          <div class="otp-actions">
+            <button class="btn-primary" onclick="verifyOtp('signup')">Verify &amp; Create Account</button>
+            <button class="resend-link" id="resendBtn-signup" onclick="requestOtp('signup', true)" disabled>Resend OTP</button>
+          </div>
+        </div>
+
+        <p class="auth-switch-hint">Already have an account? <button onclick="switchAuthTab('login')">Login</button></p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="view-history" class="view">
+  <div class="history-shell">
+    <div class="form-top-nav history-nav">
+      <button class="back-link" onclick="navigate('home')">&larr; Back to home</button>
+    </div>
+    <div class="history-head">
+      <h1>Symptom History</h1>
+      <p>Every issue you add is recorded with the day, date and time.</p>
+      <button class="history-clear" onclick="clearSymptomHistory()">Clear history</button>
+    </div>
+    <div id="historyList" class="history-list"></div>
+    <div id="historyEmpty" class="history-empty">
+      <strong>No symptom history yet.</strong>
+      <span>Your submitted issues will appear here automatically.</span>
+    </div>
+  </div>
+</section>
+
+<section id="view-doctors" class="view">
+  <div class="doctor-shell">
+    <div class="form-top-nav doctor-nav">
+      <button class="back-link" onclick="navigate('home')">&larr; Back to home</button>
+    </div>
+
+    <div class="doctor-head">
+      <h1>Doctor Availability</h1>
+      <p>Local general physicians and clinics in Pune. Check today's listed hours and request an appointment.</p>
+    </div>
+
+    <div class="doctor-toolbar">
+      <select class="doctor-filter" id="doctorAreaFilter" onchange="filterDoctors()">
+        <option value="all">All areas</option>
+        <option value="kothrud">Kothrud</option>
+        <option value="baner">Baner</option>
+        <option value="kharadi">Kharadi</option>
+        <option value="viman-nagar">Viman Nagar</option>
+        <option value="camp">Camp</option>
+      </select>
+      <span class="doctor-location">📍 Pune, Maharashtra</span>
+    </div>
+
+    <div class="doctor-grid" id="doctorGrid">
+      <article class="doctor-card" data-area="kothrud">
+        <div class="doctor-card-top">
+          <div>
+            <h3>Health Hub Clinic</h3>
+            <p class="doctor-specialty">MBBS Doctor · General Physician &amp; Surgeon</p>
+          </div>
+          <span class="availability-badge"><span class="status-dot"></span>Listed hours</span>
+        </div>
+        <div class="doctor-meta">
+          <div>📍 <strong>Kothrud</strong></div>
+          <div>🕒 <strong>10:30 AM–2:00 PM, 5:30 PM–9:30 PM</strong></div>
+          <div>📞 <strong>Clinic contact available</strong></div>
+        </div>
+        <button class="appointment-btn" onclick="openDoctorAppointment('Health Hub Clinic','Kothrud','10:30 AM–2:00 PM / 5:30 PM–9:30 PM')">Take appointment</button>
+      </article>
+
+      <article class="doctor-card" data-area="baner">
+        <div class="doctor-card-top">
+          <div>
+            <h3>Dr. Yash General Physician Clinic</h3>
+            <p class="doctor-specialty">MBBS · MD Medicine · General Physician</p>
+          </div>
+          <span class="availability-badge"><span class="status-dot"></span>Listed hours</span>
+        </div>
+        <div class="doctor-meta">
+          <div>📍 <strong>Baner</strong></div>
+          <div>🕒 <strong>9:00 AM–1:00 PM, 4:00 PM–8:30 PM</strong></div>
+          <div>💰 <strong>Clinic appointment</strong></div>
+        </div>
+        <button class="appointment-btn" onclick="openDoctorAppointment('Dr. Yash General Physician Clinic','Baner','9:00 AM–1:00 PM / 4:00 PM–8:30 PM')">Take appointment</button>
+      </article>
+
+      <article class="doctor-card" data-area="kharadi">
+        <div class="doctor-card-top">
+          <div>
+            <h3>Dr. Hande Clinic</h3>
+            <p class="doctor-specialty">General Practitioner · Viral Fever Care</p>
+          </div>
+          <span class="availability-badge"><span class="status-dot"></span>Listed hours</span>
+        </div>
+        <div class="doctor-meta">
+          <div>📍 <strong>Kharadi</strong></div>
+          <div>🕒 <strong>12:00 PM–2:00 PM, 7:00 PM–9:00 PM</strong></div>
+          <div>💡 <strong>Appointment request</strong></div>
+        </div>
+        <button class="appointment-btn" onclick="openDoctorAppointment('Dr. Hande Clinic','Kharadi','12:00 PM–2:00 PM / 7:00 PM–9:00 PM')">Take appointment</button>
+      </article>
+
+      <article class="doctor-card" data-area="viman-nagar">
+        <div class="doctor-card-top">
+          <div>
+            <h3>SPRK FirstCare Clinic</h3>
+            <p class="doctor-specialty">General Practitioner</p>
+          </div>
+          <span class="availability-badge"><span class="status-dot"></span>Open 24 hours</span>
+        </div>
+        <div class="doctor-meta">
+          <div>📍 <strong>Viman Nagar</strong></div>
+          <div>🕒 <strong>Open 24 hours</strong></div>
+          <div>💡 <strong>Appointment request</strong></div>
+        </div>
+        <button class="appointment-btn" onclick="openDoctorAppointment('SPRK FirstCare Clinic','Viman Nagar','Open 24 hours')">Take appointment</button>
+      </article>
+
+      <article class="doctor-card" data-area="camp">
+        <div class="doctor-card-top">
+          <div>
+            <h3>TrueMed Clinic</h3>
+            <p class="doctor-specialty">Doctor · General medical care</p>
+          </div>
+          <span class="availability-badge"><span class="status-dot"></span>Listed hours</span>
+        </div>
+        <div class="doctor-meta">
+          <div>📍 <strong>Camp</strong></div>
+          <div>🕒 <strong>9:00 AM–9:00 PM</strong></div>
+          <div>💡 <strong>Appointment request</strong></div>
+        </div>
+        <button class="appointment-btn" onclick="openDoctorAppointment('TrueMed Clinic','Camp','9:00 AM–9:00 PM')">Take appointment</button>
+      </article>
+
+      <article class="doctor-card" data-area="all">
+        <div class="doctor-card-top">
+          <div>
+            <h3>Dr. Subodh Kulkarni Clinic</h3>
+            <p class="doctor-specialty">Doctor · General medical consultation</p>
+          </div>
+          <span class="availability-badge"><span class="status-dot"></span>Listed hours</span>
+        </div>
+        <div class="doctor-meta">
+          <div>📍 <strong>Sadashiv Peth</strong></div>
+          <div>🕒 <strong>9:00 AM–10:00 PM</strong></div>
+          <div>💡 <strong>Appointment request</strong></div>
+        </div>
+        <button class="appointment-btn" onclick="openDoctorAppointment('Dr. Subodh Kulkarni Clinic','Sadashiv Peth','9:00 AM–10:00 PM')">Take appointment</button>
+      </article>
+    </div>
+
+    <div class="doctor-note">
+      Availability shown here is based on publicly listed clinic hours and is for the prototype. The final app should connect to a live clinic/doctor scheduling API so the status and appointment slots update in real time.
+    </div>
+  </div>
+</section>
+
+<section id="view-doctor-appointment" class="view">
+  <div class="form-shell">
+    <div class="form-top-nav">
+      <button class="back-link" onclick="navigate('doctors')">&larr; Back to doctors</button>
+    </div>
+    <div class="appointment-panel">
+      <h1>Take Appointment</h1>
+      <p>Select a preferred date and time. The request can later be connected to the clinic's live booking system.</p>
+
+      <div class="selected-doctor" id="selectedDoctorForAppointment">
+        <strong>Doctor / clinic:</strong> —
+      </div>
+
+      <div class="appointment-field">
+        <label for="doctorAppointmentDate">Preferred date</label>
+        <input type="date" id="doctorAppointmentDate">
+      </div>
+
+      <div class="appointment-field">
+        <label for="doctorAppointmentTime">Preferred time</label>
+        <select id="doctorAppointmentTime">
+          <option value="">Select a time</option>
+          <option>9:00 AM</option>
+          <option>10:00 AM</option>
+          <option>11:00 AM</option>
+          <option>12:00 PM</option>
+          <option>1:00 PM</option>
+          <option>2:00 PM</option>
+          <option>4:00 PM</option>
+          <option>5:00 PM</option>
+          <option>6:00 PM</option>
+          <option>7:00 PM</option>
+          <option>8:00 PM</option>
+          <option>9:00 PM</option>
+        </select>
+      </div>
+
+      <div class="appointment-field">
+        <label for="patientName">Patient name</label>
+        <input type="text" id="patientName" placeholder="Enter patient name">
+      </div>
+
+      <div class="appointment-field">
+        <label for="patientMobile">Mobile number</label>
+        <input type="tel" id="patientMobile" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric">
+      </div>
+
+      <div class="appointment-actions">
+        <button class="appointment-confirm" onclick="confirmDoctorAppointment()">Confirm appointment request</button>
+      </div>
+
+      <div class="appointment-success" id="doctorAppointmentSuccess" style="display:none;"></div>
+    </div>
+  </div>
+</section>
+
+<section id="view-symptom-form" class="view">
+  <div class="form-shell">
+    <div class="form-top-nav">
+      <button class="back-link" onclick="navigate('home')">&larr; Back to home</button>
+    </div>
+    <div class="form-card">
+      <h1>What's going on?</h1>
+      <p>Tap anything that matches, or describe it in your own words — both help.</p>
+
+      <span class="field-label">Common issues</span>
+      <div class="issue-grid" id="issueGrid">
+        <button type="button" class="issue-chip" data-issue="Fever">Fever</button>
+        <button type="button" class="issue-chip" data-issue="Cough & Cold">Cough & Cold</button>
+        <button type="button" class="issue-chip" data-issue="Diarrhea">Diarrhea</button>
+        <button type="button" class="issue-chip" data-issue="Body Ache">Body Ache</button>
+        <button type="button" class="issue-chip" data-issue="Headache">Headache</button>
+        <button type="button" class="issue-chip" data-issue="Vomiting">Vomiting</button>
+        <button type="button" class="issue-chip" data-issue="Skin Rash / Itching">Skin Rash / Itching</button>
+        <button type="button" class="issue-chip" data-issue="Weakness / Fatigue">Weakness / Fatigue</button>
+        <button type="button" class="issue-chip" data-issue="Breathlessness">Breathlessness</button>
+      </div>
+
+      <span class="field-label issue-group-label">Heart & brain related</span>
+      <div class="issue-grid" id="issueGridHeartBrain">
+        <button type="button" class="issue-chip" data-issue="Chest Pain">Chest Pain</button>
+        <button type="button" class="issue-chip" data-issue="Palpitations / Irregular Heartbeat">Palpitations / Irregular Heartbeat</button>
+        <button type="button" class="issue-chip" data-issue="Dizziness / Fainting">Dizziness / Fainting</button>
+        <button type="button" class="issue-chip" data-issue="Numbness / Weakness (one side)">Numbness / Weakness (one side)</button>
+        <button type="button" class="issue-chip" data-issue="Seizure / Fits">Seizure / Fits</button>
+        <button type="button" class="issue-chip" data-issue="Confusion / Memory Trouble">Confusion / Memory Trouble</button>
+      </div>
+
+      <div class="detail-panel" id="detailPanel">
+        <div class="detail-field">
+          <label for="onsetSelect">Started when?</label>
+          <select id="onsetSelect">
+            <option value="">Select one</option>
+            <option value="today">Just now / today</option>
+            <option value="few-days">1–2 days ago</option>
+            <option value="week">3–7 days ago</option>
+            <option value="long">More than a week</option>
+          </select>
+        </div>
+        <div class="detail-field">
+          <label for="allergyInput">Any allergic history?</label>
+          <input type="text" id="allergyInput" placeholder="e.g. penicillin, peanuts, dust — leave blank if none">
+        </div>
+        <div class="detail-field">
+          <label for="medsInput">Any medicines already taken?</label>
+          <input type="text" id="medsInput" placeholder="e.g. paracetamol, antacid — leave blank if none">
+        </div>
+      </div>
+
+      <span class="field-label">Describe it in your own words (optional)</span>
+      <textarea class="symptom-textarea" id="symptomText" placeholder="e.g. fever since 2 days, feels worse at night..."></textarea>
+
+      <div class="form-actions">
+        <button class="btn-primary" onclick="checkSymptoms()">Check my symptoms</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESULT ================= -->
+<section id="view-result" class="view">
+  <div class="result-shell">
+    <div class="result-card">
+      <div class="severity-banner" id="severityBanner">Checking...</div>
+      <div class="stars" id="starRating">☆☆☆☆☆</div>
+      <p class="rating-caption" id="ratingCaption">Severity 0 out of 5</p>
+      <div class="result-summary" id="resultSummary"><strong>Reported:</strong> —</div>
+      <button class="btn-primary" onclick="navigate('doctors')">Find nearby doctors</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FACILITY: HOME-VISIT DIAGNOSTICS ================= -->
+<section id="view-facility" class="view">
+  <div class="facility-shell">
+    <div class="form-top-nav facility-nav">
+      <button class="back-link" onclick="navigate('home')">&larr; Back to home</button>
+    </div>
+    <div class="facility-head">
+      <h1>Home visit diagnostics</h1>
+      <p>A technician comes to you — pick a test and book a time that works.</p>
+    </div>
+    <div class="facility-grid">
+      <div class="facility-card">
+        <span class="icon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="#6C4AB6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v6l4 9a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-9V3Z"/><path d="M9 9h6"/></svg></span>
+        <h3>Blood Test / Pathology Lab</h3>
+        <p>CBC, thyroid, liver &amp; kidney panels, and other routine lab work drawn at home.</p>
+        <button onclick="startBooking('Blood Test / Pathology Lab')">Book a home visit</button>
+      </div>
+      <div class="facility-card">
+        <span class="icon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="#6C4AB6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+        <h3>Sugar Checking (Diabetes)</h3>
+        <p>Fasting / post-meal blood sugar check, done right at your doorstep.</p>
+        <button onclick="startBooking('Sugar Checking (Diabetes)')">Book a home visit</button>
+      </div>
+      <div class="facility-card">
+        <span class="icon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="#6C4AB6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.6-7-10a4.8 4.8 0 0 1 8-3.6A4.8 4.8 0 0 1 19 11c0 5.4-7 10-7 10Z"/></svg></span>
+        <h3>BP Checking (Blood Pressure)</h3>
+        <p>Quick blood pressure reading and check-in with a technician at home.</p>
+        <button onclick="startBooking('BP Checking (Blood Pressure)')">Book a home visit</button>
+      </div>
+    </div>
+
+    <div class="lab-directory">
+      <h2>Local pathology & diagnostic labs</h2>
+      <p>Choose your area to see available local diagnostic options. You can call the lab directly or continue to its booking/contact page.</p>
+      <div class="lab-toolbar">
+        <select class="lab-filter" id="labAreaFilter" onchange="filterLabs()">
+          <option value="all">All Pune areas</option>
+          <option value="baner">Baner</option>
+          <option value="kharadi">Kharadi</option>
+          <option value="viman-nagar">Viman Nagar</option>
+          <option value="aundh">Aundh</option>
+          <option value="camp">Camp</option>
+          <option value="sadashiv-peth">Sadashiv Peth</option>
+          <option value="kothrud">Kothrud</option>
+          <option value="all-pune">All Pune / home collection</option>
+        </select>
+      </div>
+
+      <div class="lab-grid" id="labGrid">
+        <article class="lab-card" data-lab-area="baner all-pune">
+          <h3>HealthAura Pathology Lab</h3>
+          <div class="lab-area">Baner</div>
+          <p>Home collection available. Baner centre: Tulip Towers, Baner Road, Pune 411045.</p>
+          <div class="lab-actions">
+            <a class="lab-call" href="tel:+917028022588">Call lab</a>
+            <a class="lab-book" href="https://www.healthaurapathlab.com/" target="_blank" rel="noopener">Contact / Book</a>
+          </div>
+        </article>
+
+        <article class="lab-card" data-lab-area="kharadi all-pune">
+          <h3>Thyrocare Aarogyam Center</h3>
+          <div class="lab-area">Kharadi</div>
+          <p>Vitthal Heights, opposite Radisson Blu Hotel, Yashvant Nagar, Kharadi, Pune 411014.</p>
+          <div class="lab-actions">
+            <a class="lab-call" href="tel:+919158324535">Call lab</a>
+            <a class="lab-book" href="https://www.thyrocare.com/location?city=pune" target="_blank" rel="noopener">Find / Book</a>
+          </div>
+        </article>
+
+        <article class="lab-card" data-lab-area="aundh all-pune">
+          <h3>Thyrocare Aarogyam Center</h3>
+          <div class="lab-area">Aundh</div>
+          <p>Omkar Complex, Ambedkar Chowk, Shambhu Vihar Society, Aundh, Pune 411067.</p>
+          <div class="lab-actions">
+            <a class="lab-call" href="tel:+917875407229">Call lab</a>
+            <a class="lab-book" href="https://www.thyrocare.com/location?city=pune" target="_blank" rel="noopener">Find / Book</a>
+          </div>
+        </article>
+
+        <article class="lab-card" data-lab-area="sadashiv-peth all-pune">
+          <h3>Thyrocare Aarogyam Center</h3>
+          <div class="lab-area">Sadashiv Peth</div>
+          <p>Om Sai Clinic, Yashlaxmi CHS, Bhopatkar Road, near Peru Gate Police Station, Pune 411030.</p>
+          <div class="lab-actions">
+            <a class="lab-call" href="tel:+918600222066">Call lab</a>
+            <a class="lab-book" href="https://www.thyrocare.com/location?city=pune" target="_blank" rel="noopener">Find / Book</a>
+          </div>
+        </article>
+
+        <article class="lab-card" data-lab-area="camp all-pune">
+          <h3>Pathofast Lab Pune</h3>
+          <div class="lab-area">Camp</div>
+          <p>Manisha Terrace, Moledina Road, Camp, Pune 411001. Home blood-sample collection is offered across Pune.</p>
+          <div class="lab-actions">
+            <a class="lab-call" href="tel:+912049304930">Call lab</a>
+            <a class="lab-book" href="https://pathofast.com/pune" target="_blank" rel="noopener">Book / Contact</a>
+          </div>
+        </article>
+
+        <article class="lab-card" data-lab-area="kothrud viman-nagar all-pune">
+          <h3>Sonoclinic Radiology & Pathology</h3>
+          <div class="lab-area">Kothrud / Viman Nagar service areas</div>
+          <p>Pathology, home blood collection and diagnostic services; serves Kothrud, Viman Nagar, Kharadi and other Pune areas.</p>
+          <div class="lab-actions">
+            <a class="lab-call" href="tel:+919156096262">Call lab</a>
+            <a class="lab-book" href="https://sonoclinic.co/" target="_blank" rel="noopener">Contact / Book</a>
+          </div>
+        </article>
+      </div>
+      <div class="lab-note">Lab names, locations and contact details are based on publicly listed information checked for this prototype. Confirm current availability, pricing and home-collection coverage with the lab before booking.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BOOKING FORM ================= -->
+<section id="view-booking" class="view">
+  <div class="form-shell">
+    <div class="form-top-nav">
+      <button class="back-link" onclick="navigate('facility')">&larr; Back to tests</button>
+    </div>
+    <div class="form-card">
+      <span class="service-tag" id="bookingServiceName">—</span>
+      <h1>Book your slot</h1>
+      <p>Pick a date, time and address — a technician will confirm shortly.</p>
+
+      <div class="booking-field">
+        <label for="bookingDate">Preferred date</label>
+        <input type="date" id="bookingDate">
+      </div>
+      <div class="booking-field">
+        <label for="bookingSlot">Preferred time slot</label>
+        <select id="bookingSlot">
+          <option value="">Select one</option>
+          <option value="Morning (8am – 11am)">Morning (8am – 11am)</option>
+          <option value="Afternoon (12pm – 3pm)">Afternoon (12pm – 3pm)</option>
+          <option value="Evening (4pm – 7pm)">Evening (4pm – 7pm)</option>
+        </select>
+      </div>
+      <div class="booking-field">
+        <label for="bookingAddress">Address / landmark</label>
+        <input type="text" id="bookingAddress" placeholder="House no., street, nearest landmark">
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-violet" onclick="confirmBooking()">Confirm booking</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BOOKING CONFIRMATION ================= -->
+<section id="view-booking-confirm" class="view">
+  <div class="result-shell">
+    <div class="result-card">
+      <div class="confirm-check">✓</div>
+      <h1 style="font-family:var(--font-head); color:var(--cobalt-dark); margin:0 0 10px; font-size:1.4rem;">Visit booked</h1>
+      <div class="result-summary" id="bookingSummary"><strong>Details:</strong> —</div>
+      <button class="btn-primary" onclick="navigate('home')">Back to home</button>
+    </div>
+  </div>
+</section>
+
+<script>
+  /* ----------------------------------------------------------
+     Single-file router: every "page" is a <section class="view">
+     shown/hidden by id. Swap a section's inner HTML later on to
+     build it out — the nav plumbing below won't need to change.
+  ---------------------------------------------------------- */
+  function navigate(viewName){
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const target = document.getElementById('view-' + viewName);
+    if (target) target.classList.add('active');
+    window.location.hash = viewName;
+    window.scrollTo(0,0);
+    if (viewName === 'history') renderSymptomHistory();
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const startView = window.location.hash.replace('#','') || 'home';
+    navigate(startView);
+    renderSymptomHistory();
+    setMinimumBookingDates();
+  });
+  window.addEventListener('hashchange', () => {
+    navigate(window.location.hash.replace('#','') || 'home');
+  });
+
+  /* ---------------- symptom form + result logic ---------------- */
+  const issueWeights = {
+    "Fever": 3, "Cough & Cold": 2, "Diarrhea": 3, "Body Ache": 2, "Headache": 2,
+    "Vomiting": 3, "Skin Rash / Itching": 1, "Weakness / Fatigue": 2, "Breathlessness": 5,
+    "Chest Pain": 5, "Palpitations / Irregular Heartbeat": 4, "Dizziness / Fainting": 4,
+    "Numbness / Weakness (one side)": 5, "Seizure / Fits": 5, "Confusion / Memory Trouble": 4
+  };
+  const urgentKeywords = ["blood", "breath", "chest pain", "faint", "unconscious", "severe"];
+  const allergyRedFlagIssues = new Set(["Breathlessness", "Skin Rash / Itching", "Dizziness / Fainting"]);
+  const selectedIssues = new Set();
+  const detailPanel = document.getElementById('detailPanel');
+
+  function toggleDetailPanel(){
+    detailPanel.classList.toggle('visible', selectedIssues.size > 0);
+  }
+
+  document.querySelectorAll('.issue-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const issue = chip.getAttribute('data-issue');
+      if (selectedIssues.has(issue)) { selectedIssues.delete(issue); chip.classList.remove('selected'); }
+      else { selectedIssues.add(issue); chip.classList.add('selected'); }
+      toggleDetailPanel();
+    });
+  });
+
+  function checkSymptoms(){
+    const freeText = document.getElementById('symptomText').value.trim();
+    if (selectedIssues.size === 0 && !freeText){
+      alert('Pick at least one issue above, or describe it in a few words.');
+      return;
+    }
+    if (selectedIssues.size > 0 && !document.getElementById('onsetSelect').value){
+      alert('Let us know when it started — it helps decide how serious this is.');
+      return;
+    }
+
+    const onset = document.getElementById('onsetSelect').value;
+    const allergy = document.getElementById('allergyInput').value.trim();
+    const meds = document.getElementById('medsInput').value.trim();
+
+    let score = 0;
+    selectedIssues.forEach(issue => { score = Math.max(score, issueWeights[issue] || 2); });
+    const lowerText = freeText.toLowerCase();
+    if (urgentKeywords.some(k => lowerText.includes(k))) score = Math.max(score, 5);
+
+    // onset: a high-weight symptom that started today is more urgent
+    if (onset === 'today' && score >= 4) score = 5;
+    // a known allergy alongside a reaction-type symptom is a red flag
+    if (allergy && Array.from(selectedIssues).some(i => allergyRedFlagIssues.has(i))) score = 5;
+
+    if (score === 0 && freeText) score = 2; // free text only, no chip picked
+    score = Math.max(1, Math.min(5, score));
+
+    // Add this submitted issue to the symptom history with day/date/time.
+    addSymptomHistory(Array.from(selectedIssues), freeText, onset, score);
+
+    // paint stars
+    document.getElementById('starRating').innerHTML =
+      '<span class="filled">' + '★'.repeat(score) + '</span>' +
+      '<span class="empty">' + '☆'.repeat(5 - score) + '</span>';
+    document.getElementById('ratingCaption').textContent = 'Severity ' + score + ' out of 5';
+
+    // banner
+    const banner = document.getElementById('severityBanner');
+    banner.className = 'severity-banner';
+    if (score >= 4){
+      banner.classList.add('serious');
+      banner.textContent = 'This may need urgent care — please see a doctor soon';
+    } else if (score === 3){
+      banner.classList.add('moderate');
+      banner.textContent = "Worth watching — see a doctor if it doesn't ease up";
+    } else {
+      banner.classList.add('mild');
+      banner.textContent = 'Looks mild — rest and keep an eye on it';
+    }
+
+    // summary
+    const onsetLabels = { today:'started today', 'few-days':'started 1–2 days ago', week:'started 3–7 days ago', long:'started over a week ago' };
+    const parts = [];
+    if (selectedIssues.size) parts.push(Array.from(selectedIssues).join(', '));
+    if (freeText) parts.push('"' + freeText + '"');
+    if (onset) parts.push(onsetLabels[onset]);
+    if (allergy) parts.push('allergy: ' + allergy);
+    if (meds) parts.push('already took: ' + meds);
+    document.getElementById('resultSummary').innerHTML =
+      '<strong>Reported:</strong> ' + parts.join(' — ');
+
+    navigate('result');
+  }
+
+  /* ---------------- home-visit diagnostics booking ---------------- */
+  let currentBooking = { service: '' };
+
+  function startBooking(serviceName){
+    currentBooking.service = serviceName;
+    document.getElementById('bookingServiceName').textContent = serviceName;
+    document.getElementById('bookingDate').value = '';
+    document.getElementById('bookingSlot').value = '';
+    document.getElementById('bookingAddress').value = '';
+    navigate('booking');
+  }
+
+  function confirmBooking(){
+    const date = document.getElementById('bookingDate').value;
+    const slot = document.getElementById('bookingSlot').value;
+    const address = document.getElementById('bookingAddress').value.trim();
+
+    if (!date || !slot || !address){
+      alert('Please fill in the date, time slot and address so the technician can find you.');
+      return;
+    }
+
+    const prettyDate = new Date(date + 'T00:00:00').toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+    document.getElementById('bookingSummary').innerHTML =
+      '<strong>' + currentBooking.service + '</strong><br>' +
+      prettyDate + ' — ' + slot + '<br>' +
+      address + '<br><br>A technician will reach your address in this window.';
+
+    navigate('booking-confirm');
+  }
+
+  /* ---------------- login / sign up: tabs + OTP flow ---------------- */
+  const otpStore = {};
+
+  function switchAuthTab(mode){
+    document.getElementById('tabLoginBtn').classList.toggle('active', mode === 'login');
+    document.getElementById('tabSignupBtn').classList.toggle('active', mode === 'signup');
+    document.getElementById('panel-login').style.display = mode === 'login' ? 'block' : 'none';
+    document.getElementById('panel-signup').style.display = mode === 'signup' ? 'block' : 'none';
+  }
+
+  function handleOtpInput(e){
+    e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(-1);
+    if (e.target.value && e.target.nextElementSibling && e.target.nextElementSibling.classList.contains('otp-box')){
+      e.target.nextElementSibling.focus();
+    }
+  }
+
+  function handleOtpKeydown(e){
+    if (e.key === 'Backspace' && !e.target.value && e.target.previousElementSibling && e.target.previousElementSibling.classList.contains('otp-box')){
+      e.target.previousElementSibling.focus();
+    }
+  }
+
+  function requestOtp(mode){
+    const email = document.getElementById(mode + 'Email').value.trim();
+    const mobile = document.getElementById(mode + 'Mobile').value.trim();
+
+    if (!email && !mobile){
+      alert('Enter your email or mobile number to get an OTP.');
+      return;
+    }
+    if (mobile && !/^\d{10}$/.test(mobile)){
+      alert('Enter a valid 10-digit mobile number.');
+      return;
+    }
+    if (email && !/^\S+@\S+\.\S+$/.test(email)){
+      alert('Enter a valid email address.');
+      return;
+    }
+
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    otpStore[mode] = otp;
+
+    const dest = email && mobile ? (email + ' and ' + mobile) : (email || mobile);
+    // Demo only: no real SMS/email backend is wired up yet, so the OTP is shown here for testing.
+    document.getElementById('otpSentMsg-' + mode).textContent =
+      'OTP sent to ' + dest + '. (Demo mode — your OTP is ' + otp + ')';
+
+    document.getElementById('otpPanel-' + mode).style.display = 'block';
+    document.querySelectorAll('#otpInputs-' + mode + ' .otp-box').forEach(box => box.value = '');
+    const firstBox = document.querySelector('#otpInputs-' + mode + ' .otp-box');
+    if (firstBox) firstBox.focus();
+
+    startResendTimer(mode);
+  }
+
+  function startResendTimer(mode){
+    const btn = document.getElementById('resendBtn-' + mode);
+    let seconds = 30;
+    btn.disabled = true;
+    btn.textContent = 'Resend OTP (' + seconds + 's)';
+    clearInterval(btn._timer);
+    btn._timer = setInterval(() => {
+      seconds -= 1;
+      if (seconds <= 0){
+        clearInterval(btn._timer);
+        btn.disabled = false;
+        btn.textContent = 'Resend OTP';
+      } else {
+        btn.textContent = 'Resend OTP (' + seconds + 's)';
+      }
+    }, 1000);
+  }
+
+  function verifyOtp(mode){
+    const boxes = document.querySelectorAll('#otpInputs-' + mode + ' .otp-box');
+    const entered = Array.from(boxes).map(b => b.value).join('');
+
+    if (entered.length < 6){
+      alert('Enter the full 6-digit OTP.');
+      return;
+    }
+    if (entered !== otpStore[mode]){
+      alert('Incorrect OTP. Please try again.');
+      return;
+    }
+
+    alert(mode === 'login' ? 'Logged in successfully!' : 'Account created successfully!');
+    navigate('home');
+  }
+
+
+  /* ---------------- doctor availability + appointment request ---------------- */
+  let selectedDoctorForBooking = { name:'', area:'', hours:'' };
+
+  function filterDoctors(){
+    const area = document.getElementById('doctorAreaFilter').value;
+    document.querySelectorAll('#doctorGrid .doctor-card').forEach(card => {
+      const cardArea = card.getAttribute('data-area');
+      card.style.display = (area === 'all' || cardArea === area || cardArea === 'all') ? '' : 'none';
+    });
+  }
+
+  function openDoctorAppointment(name, area, hours){
+    selectedDoctorForBooking = { name, area, hours };
+    document.getElementById('selectedDoctorForAppointment').innerHTML =
+      '<strong>Doctor / clinic:</strong> ' + name + '<br>' +
+      '<strong>Area:</strong> ' + area + '<br>' +
+      '<strong>Listed hours:</strong> ' + hours;
+    document.getElementById('doctorAppointmentDate').value = '';
+    document.getElementById('doctorAppointmentTime').value = '';
+    document.getElementById('patientName').value = '';
+    document.getElementById('patientMobile').value = '';
+    document.getElementById('doctorAppointmentSuccess').style.display = 'none';
+    navigate('doctor-appointment');
+  }
+
+  function confirmDoctorAppointment(){
+    const date = document.getElementById('doctorAppointmentDate').value;
+    const time = document.getElementById('doctorAppointmentTime').value;
+    const name = document.getElementById('patientName').value.trim();
+    const mobile = document.getElementById('patientMobile').value.trim();
+
+    if (!date || !time || !name || !mobile){
+      alert('Please fill in the date, time, patient name and mobile number.');
+      return;
+    }
+    if (!/^\d{10}$/.test(mobile)){
+      alert('Enter a valid 10-digit mobile number.');
+      return;
+    }
+
+    const prettyDate = new Date(date + 'T00:00:00').toLocaleDateString('en-IN', {
+      day:'numeric', month:'long', year:'numeric'
+    });
+
+    const success = document.getElementById('doctorAppointmentSuccess');
+    success.innerHTML =
+      '<strong>Appointment request created.</strong><br>' +
+      selectedDoctorForBooking.name + '<br>' +
+      prettyDate + ' at ' + time + '<br>' +
+      'Patient: ' + name + '<br><br>' +
+      'Demo mode: the request is stored only in this page. A real deployment should send it to the clinic booking backend.';
+    success.style.display = 'block';
+  }
+
+  function setMinimumBookingDates(){
+    const today = new Date().toISOString().split('T')[0];
+    ['bookingDate','doctorAppointmentDate'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.min = today;
+    });
+  }
+
+  /* ---------------- symptom history ---------------- */
+  const SYMPTOM_HISTORY_KEY = 'ruralHealthSymptomHistory';
+
+  function getSymptomHistory(){
+    try {
+      return JSON.parse(localStorage.getItem(SYMPTOM_HISTORY_KEY) || '[]');
+    } catch(e) {
+      return [];
+    }
+  }
+
+  function saveSymptomHistory(entries){
+    localStorage.setItem(SYMPTOM_HISTORY_KEY, JSON.stringify(entries));
+  }
+
+  function addSymptomHistory(issues, freeText, onset, score){
+    const now = new Date();
+    const entry = {
+      issues: issues.length ? issues : ['Other / described issue'],
+      text: freeText || '',
+      onset: onset || '',
+      score: score,
+      timestamp: now.toISOString()
+    };
+    const history = getSymptomHistory();
+    history.unshift(entry);
+    saveSymptomHistory(history);
+    renderSymptomHistory();
+  }
+
+  function renderSymptomHistory(){
+    const list = document.getElementById('historyList');
+    const empty = document.getElementById('historyEmpty');
+    if (!list || !empty) return;
+
+    const history = getSymptomHistory();
+    list.innerHTML = '';
+
+    if (!history.length){
+      empty.style.display = 'flex';
+      return;
+    }
+
+    empty.style.display = 'none';
+
+    history.forEach(entry => {
+      const dt = new Date(entry.timestamp);
+      const day = dt.toLocaleDateString('en-IN', { weekday:'long' });
+      const date = dt.toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+      const time = dt.toLocaleTimeString('en-IN', { hour:'numeric', minute:'2-digit' });
+
+      const card = document.createElement('article');
+      card.className = 'history-entry';
+      card.innerHTML = `
+        <div class="history-entry-top">
+          <div class="history-issue">${entry.issues.map(escapeHtml).join(', ')}</div>
+          <div class="history-time">${escapeHtml(time)}</div>
+        </div>
+        <div class="history-meta">
+          <span class="history-pill">Day: ${escapeHtml(day)}</span>
+          <span class="history-pill">Date: ${escapeHtml(date)}</span>
+          <span class="history-pill">Severity: ${escapeHtml(String(entry.score || '—'))}/5</span>
+        </div>
+        ${entry.onset ? `<div class="history-details"><strong>Started:</strong> ${escapeHtml(formatOnset(entry.onset))}</div>` : ''}
+        ${entry.text ? `<div class="history-details"><strong>Description:</strong> ${escapeHtml(entry.text)}</div>` : ''}
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  function formatOnset(value){
+    const labels = {
+      today:'Just now / today',
+      'few-days':'1–2 days ago',
+      week:'3–7 days ago',
+      long:'More than a week'
+    };
+    return labels[value] || value;
+  }
+
+  function escapeHtml(value){
+    return String(value).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+    }[c]));
+  }
+
+  function clearSymptomHistory(){
+    if (getSymptomHistory().length && confirm('Clear all symptom history?')){
+      localStorage.removeItem(SYMPTOM_HISTORY_KEY);
+      renderSymptomHistory();
+    }
+  }
+
+  /* ---------------- local diagnostic labs ---------------- */
+  function filterLabs(){
+    const value = document.getElementById('labAreaFilter').value;
+    document.querySelectorAll('#labGrid .lab-card').forEach(card => {
+      const areas = (card.dataset.labArea || '').split(/\s+/);
+      card.style.display = (value === 'all' || areas.includes(value)) ? '' : 'none';
+    });
+  }
+
+  /* ---------------- i18n: English / Marathi / Hindi ---------------- */
+  const translations = {
+    en: {
+      "Rural Health Triage":"Rural Health Triage","Quick symptom check-in for your local health center":"Quick symptom check-in for your local health center","Enter your health issue":"Enter your health issue",
+      "Doctor availability":"Doctor availability","See who's on duty near you":"See who's on duty near you","Your symptom history":"Your symptom history","Past check-ins and results":"Past check-ins and results",
+      "Home visit diagnostics":"Home visit diagnostics","Book a lab test at your doorstep":"Book a lab test at your doorstep","Login / Sign up":"Login / Sign up","Save your history across visits":"Save your history across visits",
+      "Back to home":"← Back to home","Back to tests":"← Back to tests","Symptom History":"Symptom History","Your past check-ins will be listed here once the backend is connected.":"Your past check-ins will be listed here once the backend is connected.",
+      "Doctor Availability":"Doctor Availability","Live doctor availability for nearby facilities will show here.":"Live doctor availability for nearby facilities will show here.",
+      "What's going on?":"What's going on?","Tap anything that matches, or describe it in your own words — both help.":"Tap anything that matches, or describe it in your own words — both help.",
+      "Common issues":"Common issues","Heart & brain related":"Heart & brain related","Started when?":"Started when?","Select one":"Select one","Just now / today":"Just now / today","1–2 days ago":"1–2 days ago","3–7 days ago":"3–7 days ago","More than a week":"More than a week",
+      "Any allergic history?":"Any allergic history?","Any medicines already taken?":"Any medicines already taken?","Describe it in your own words (optional)":"Describe it in your own words (optional)","Check my symptoms":"Check my symptoms",
+      "Find nearby doctors":"Find nearby doctors","Login":"Login","Sign Up":"Sign Up","Welcome back":"Welcome back","Login with your email or mobile number":"Login with your email or mobile number",
+      "Email address":"Email address","Mobile number":"Mobile number","Get OTP":"Get OTP","Verify & Login":"Verify & Login","Resend OTP":"Resend OTP","New here?":"New here?","Create an account":"Create an account",
+      "Create your account":"Create your account","Sign up with your email or mobile number":"Sign up with your email or mobile number","Verify & Create Account":"Verify & Create Account","Already have an account?":"Already have an account?",
+      "Checking...":"Checking...","Severity 0 out of 5":"Severity 0 out of 5","Reported:":"Reported:",
+      "Home visit diagnostics":"Home visit diagnostics","A technician comes to you — pick a test and book a time that works.":"A technician comes to you — pick a test and book a time that works.",
+      "Blood Test / Pathology Lab":"Blood Test / Pathology Lab","CBC, thyroid, liver & kidney panels, and other routine lab work drawn at home.":"CBC, thyroid, liver & kidney panels, and other routine lab work drawn at home.",
+      "Sugar Checking (Diabetes)":"Sugar Checking (Diabetes)","Fasting / post-meal blood sugar check, done right at your doorstep.":"Fasting / post-meal blood sugar check, done right at your doorstep.",
+      "BP Checking (Blood Pressure)":"BP Checking (Blood Pressure)","Quick blood pressure reading and check-in with a technician at home.":"Quick blood pressure reading and check-in with a technician at home.",
+      "Book a home visit":"Book a home visit","Book your slot":"Book your slot","Pick a date, time and address — a technician will confirm shortly.":"Pick a date, time and address — a technician will confirm shortly.",
+      "Preferred date":"Preferred date","Preferred time slot":"Preferred time slot","Address / landmark":"Address / landmark","Confirm booking":"Confirm booking","Visit booked":"Visit booked",
+      "Fever":"Fever","Cough & Cold":"Cough & Cold","Diarrhea":"Diarrhea","Body Ache":"Body Ache","Headache":"Headache","Vomiting":"Vomiting","Skin Rash / Itching":"Skin Rash / Itching","Weakness / Fatigue":"Weakness / Fatigue","Breathlessness":"Breathlessness",
+      "Chest Pain":"Chest Pain","Palpitations / Irregular Heartbeat":"Palpitations / Irregular Heartbeat","Dizziness / Fainting":"Dizziness / Fainting","Numbness / Weakness (one side)":"Numbness / Weakness (one side)","Seizure / Fits":"Seizure / Fits","Confusion / Memory Trouble":"Confusion / Memory Trouble"
+    },
+    mr: {
+      "Rural Health Triage":"ग्रामीण आरोग्य तपासणी","Quick symptom check-in for your local health center":"तुमच्या जवळच्या आरोग्य केंद्रासाठी जलद तपासणी","Enter your health issue":"तुमची आरोग्य समस्या नोंदवा",
+      "Doctor availability":"डॉक्टर उपलब्धता","See who's on duty near you":"जवळपास कोण उपलब्ध आहे ते पहा","Your symptom history":"तुमचा तपासणी इतिहास","Past check-ins and results":"मागील नोंदी आणि निकाल",
+      "Home visit diagnostics":"घरी निदान सेवा","Book a lab test at your doorstep":"तुमच्या दारात लॅब चाचणी बुक करा","Login / Sign up":"लॉगिन / नोंदणी","Save your history across visits":"प्रत्येक भेटीत इतिहास जतन करा",
+      "Back to home":"← मुख्यपृष्ठावर परत जा","Back to tests":"← चाचण्यांकडे परत जा","Symptom History":"तपासणी इतिहास","Your past check-ins will be listed here once the backend is connected.":"बॅकएंड जोडल्यावर तुमच्या मागील तपासण्या येथे दिसतील.",
+      "Doctor Availability":"डॉक्टर उपलब्धता","Live doctor availability for nearby facilities will show here.":"जवळच्या केंद्रांमधील डॉक्टरांची उपलब्धता येथे दिसेल.",
+      "What's going on?":"काय त्रास होत आहे?","Tap anything that matches, or describe it in your own words — both help.":"लक्षणाशी जुळणारा पर्याय निवडा किंवा स्वतःच्या शब्दांत वर्णन करा — दोन्ही मदत करतील.",
+      "Common issues":"सामान्य समस्या","Heart & brain related":"हृदय आणि मेंदूशी संबंधित","Started when?":"कधीपासून सुरू झाले?","Select one":"एक निवडा","Just now / today":"आत्ताच / आज","1–2 days ago":"१–२ दिवसांपूर्वी","3–7 days ago":"३–७ दिवसांपूर्वी","More than a week":"एका आठवड्यापेक्षा जास्त",
+      "Any allergic history?":"अॅलर्जीचा काही इतिहास आहे का?","Any medicines already taken?":"आधी कोणती औषधे घेतली आहेत का?","Describe it in your own words (optional)":"स्वतःच्या शब्दांत वर्णन करा (पर्यायी)","Check my symptoms":"माझी लक्षणे तपासा",
+      "Find nearby doctors":"जवळचे डॉक्टर शोधा","Login":"लॉगिन","Sign Up":"नोंदणी","Welcome back":"पुन्हा स्वागत आहे","Login with your email or mobile number":"तुमच्या ईमेल किंवा मोबाईल क्रमांकाने लॉगिन करा",
+      "Email address":"ईमेल पत्ता","Mobile number":"मोबाईल क्रमांक","Get OTP":"OTP मिळवा","Verify & Login":"पडताळा आणि लॉगिन करा","Resend OTP":"OTP पुन्हा पाठवा","New here?":"नवीन आहात?","Create an account":"खाते तयार करा",
+      "Create your account":"तुमचे खाते तयार करा","Sign up with your email or mobile number":"तुमच्या ईमेल किंवा मोबाईल क्रमांकाने नोंदणी करा","Verify & Create Account":"पडताळा आणि खाते तयार करा","Already have an account?":"आधीच खाते आहे?",
+      "Checking...":"तपासत आहे...","Severity 0 out of 5":"तीव्रता ५ पैकी ०","Reported:":"नोंदवलेले:",
+      "A technician comes to you — pick a test and book a time that works.":"तंत्रज्ञ तुमच्या घरी येईल — चाचणी निवडा आणि सोयीची वेळ बुक करा.",
+      "Blood Test / Pathology Lab":"रक्त तपासणी / पॅथॉलॉजी लॅब","CBC, thyroid, liver & kidney panels, and other routine lab work drawn at home.":"CBC, थायरॉईड, यकृत व मूत्रपिंड तपासणी आणि इतर नियमित चाचण्या घरी केल्या जातील.",
+      "Sugar Checking (Diabetes)":"साखर तपासणी (मधुमेह)","Fasting / post-meal blood sugar check, done right at your doorstep.":"उपाशीपोटी / जेवणानंतरची रक्तातील साखर तपासणी तुमच्या घरी केली जाईल.",
+      "BP Checking (Blood Pressure)":"BP तपासणी (रक्तदाब)","Quick blood pressure reading and check-in with a technician at home.":"तंत्रज्ञ घरी येऊन रक्तदाब तपासणी करेल.",
+      "Book a home visit":"घरी भेट बुक करा","Book your slot":"तुमची वेळ बुक करा","Pick a date, time and address — a technician will confirm shortly.":"तारीख, वेळ आणि पत्ता निवडा — तंत्रज्ञ लवकरच पुष्टी करेल.",
+      "Preferred date":"पसंतीची तारीख","Preferred time slot":"पसंतीची वेळ","Address / landmark":"पत्ता / जवळची खूण","Confirm booking":"बुकिंग निश्चित करा","Visit booked":"भेट बुक झाली",
+      "Fever":"ताप","Cough & Cold":"खोकला आणि सर्दी","Diarrhea":"जुलाब","Body Ache":"अंगदुखी","Headache":"डोकेदुखी","Vomiting":"उलट्या","Skin Rash / Itching":"त्वचेवर पुरळ / खाज","Weakness / Fatigue":"अशक्तपणा / थकवा","Breathlessness":"श्वास घेण्यास त्रास",
+      "Chest Pain":"छातीत दुखणे","Palpitations / Irregular Heartbeat":"हृदयाची धडधड / अनियमित ठोके","Dizziness / Fainting":"चक्कर / बेशुद्ध पडणे","Numbness / Weakness (one side)":"बधिरपणा / अशक्तपणा (एका बाजूला)","Seizure / Fits":"झटके / फिट्स","Confusion / Memory Trouble":"गोंधळ / स्मरणशक्तीची अडचण"
+    },
+    hi: {
+      "Rural Health Triage":"ग्रामीण स्वास्थ्य जांच","Quick symptom check-in for your local health center":"आपके नज़दीकी स्वास्थ्य केंद्र के लिए त्वरित जांच","Enter your health issue":"अपनी स्वास्थ्य समस्या दर्ज करें",
+      "Doctor availability":"डॉक्टर उपलब्धता","See who's on duty near you":"देखें आपके पास कौन उपलब्ध है","Your symptom history":"आपका लक्षण इतिहास","Past check-ins and results":"पिछली जांच और परिणाम",
+      "Home visit diagnostics":"घर पर जांच सेवा","Book a lab test at your doorstep":"घर पर लैब टेस्ट बुक करें","Login / Sign up":"लॉगिन / साइन अप","Save your history across visits":"हर बार अपना इतिहास सहेजें",
+      "Back to home":"← होम पर वापस जाएँ","Back to tests":"← जांचों पर वापस जाएँ","Symptom History":"लक्षण इतिहास","Your past check-ins will be listed here once the backend is connected.":"बैकएंड जुड़ने के बाद आपकी पिछली जांच यहाँ दिखाई देंगी।",
+      "Doctor Availability":"डॉक्टर उपलब्धता","Live doctor availability for nearby facilities will show here.":"पास के केंद्रों में डॉक्टरों की उपलब्धता यहाँ दिखाई देगी।",
+      "What's going on?":"क्या परेशानी है?","Tap anything that matches, or describe it in your own words — both help.":"जो लक्षण आपसे मेल खाता है उसे चुनें या अपने शब्दों में बताएं — दोनों मदद करते हैं।",
+      "Common issues":"सामान्य समस्याएँ","Heart & brain related":"हृदय और मस्तिष्क से संबंधित","Started when?":"कब से शुरू हुआ?","Select one":"एक चुनें","Just now / today":"अभी / आज","1–2 days ago":"१–२ दिन पहले","3–7 days ago":"३–७ दिन पहले","More than a week":"एक सप्ताह से अधिक",
+      "Any allergic history?":"क्या एलर्जी का कोई इतिहास है?","Any medicines already taken?":"क्या पहले से कोई दवा ली है?","Describe it in your own words (optional)":"अपने शब्दों में बताएं (वैकल्पिक)","Check my symptoms":"मेरे लक्षण जांचें",
+      "Find nearby doctors":"पास के डॉक्टर खोजें","Login":"लॉगिन","Sign Up":"साइन अप","Welcome back":"वापसी पर स्वागत है","Login with your email or mobile number":"अपने ईमेल या मोबाइल नंबर से लॉगिन करें",
+      "Email address":"ईमेल पता","Mobile number":"मोबाइल नंबर","Get OTP":"OTP प्राप्त करें","Verify & Login":"सत्यापित करें और लॉगिन करें","Resend OTP":"OTP फिर भेजें","New here?":"नए हैं?","Create an account":"खाता बनाएं",
+      "Create your account":"अपना खाता बनाएं","Sign up with your email or mobile number":"अपने ईमेल या मोबाइल नंबर से साइन अप करें","Verify & Create Account":"सत्यापित करें और खाता बनाएं","Already have an account?":"पहले से खाता है?",
+      "Checking...":"जांच हो रही है...","Severity 0 out of 5":"गंभीरता ५ में से ०","Reported:":"रिपोर्ट:",
+      "A technician comes to you — pick a test and book a time that works.":"तकनीशियन आपके घर आएगा — जांच चुनें और सुविधाजनक समय बुक करें।",
+      "Blood Test / Pathology Lab":"ब्लड टेस्ट / पैथोलॉजी लैब","CBC, thyroid, liver & kidney panels, and other routine lab work drawn at home.":"CBC, थायरॉइड, लिवर और किडनी जांच तथा अन्य नियमित लैब टेस्ट घर पर किए जाएंगे।",
+      "Sugar Checking (Diabetes)":"शुगर जांच (मधुमेह)","Fasting / post-meal blood sugar check, done right at your doorstep.":"फास्टिंग / भोजन के बाद ब्लड शुगर जांच आपके घर पर की जाएगी।",
+      "BP Checking (Blood Pressure)":"BP जांच (रक्तचाप)","Quick blood pressure reading and check-in with a technician at home.":"तकनीशियन घर पर आकर रक्तचाप की जांच करेगा।",
+      "Book a home visit":"घर पर विज़िट बुक करें","Book your slot":"अपना स्लॉट बुक करें","Pick a date, time and address — a technician will confirm shortly.":"तारीख, समय और पता चुनें — तकनीशियन जल्द ही पुष्टि करेगा।",
+      "Preferred date":"पसंदीदा तारीख","Preferred time slot":"पसंदीदा समय","Address / landmark":"पता / लैंडमार्क","Confirm booking":"बुकिंग की पुष्टि करें","Visit booked":"विज़िट बुक हो गई",
+      "Fever":"बुखार","Cough & Cold":"खांसी और जुकाम","Diarrhea":"दस्त","Body Ache":"शरीर में दर्द","Headache":"सिरदर्द","Vomiting":"उल्टी","Skin Rash / Itching":"त्वचा पर चकत्ते / खुजली","Weakness / Fatigue":"कमज़ोरी / थकान","Breathlessness":"सांस लेने में तकलीफ",
+      "Chest Pain":"सीने में दर्द","Palpitations / Irregular Heartbeat":"धड़कन / अनियमित हृदयगति","Dizziness / Fainting":"चक्कर / बेहोशी","Numbness / Weakness (one side)":"सुन्नपन / कमजोरी (एक तरफ)","Seizure / Fits":"दौरे / फिट्स","Confusion / Memory Trouble":"भ्रम / याददाश्त की समस्या"
+    }
+  };
+
+  const langSelect = document.getElementById('langSelect');
+  const globalLangSelect = document.getElementById('globalLangSelect');
+
+  // Keep the original English text for every translatable text node.
+  const originalText = new WeakMap();
+  const originalAttrs = new WeakMap();
+
+  function rememberAndTranslateText(lang){
+    const dict = translations[lang] || translations.en;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let node;
+    while (node = walker.nextNode()) {
+      if (node.parentElement && ['SCRIPT','STYLE'].includes(node.parentElement.tagName)) continue;
+      const raw = originalText.has(node) ? originalText.get(node) : node.nodeValue;
+      if (!originalText.has(node)) originalText.set(node, raw);
+      const trimmed = raw.trim();
+      if (!trimmed || !dict[trimmed]) continue;
+      node.nodeValue = raw.replace(trimmed, dict[trimmed]);
+    }
+
+    document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(el => {
+      if (!originalAttrs.has(el)) originalAttrs.set(el, el.getAttribute('placeholder'));
+      const raw = originalAttrs.get(el);
+      const placeholders = {
+        "you@example.com": {mr:"you@example.com",hi:"you@example.com"},
+        "10-digit mobile number": {mr:"१० अंकी मोबाईल क्रमांक",hi:"10 अंकों का मोबाइल नंबर"},
+        "e.g. penicillin, peanuts, dust — leave blank if none": {mr:"उदा. पेनिसिलिन, शेंगदाणे, धूळ — काही नसल्यास रिक्त ठेवा",hi:"जैसे पेनिसिलिन, मूंगफली, धूल — कुछ न हो तो खाली छोड़ें"},
+        "e.g. paracetamol, antacid — leave blank if none": {mr:"उदा. पॅरासिटामॉल, अँटॅसिड — काही नसल्यास रिक्त ठेवा",hi:"जैसे पैरासिटामोल, एंटासिड — कुछ न हो तो खाली छोड़ें"},
+        "e.g. fever since 2 days, feels worse at night...": {mr:"उदा. २ दिवसांपासून ताप, रात्री जास्त त्रास...",hi:"जैसे 2 दिनों से बुखार, रात में ज्यादा परेशानी..."},
+        "House no., street, nearest landmark": {mr:"घर क्रमांक, रस्ता, जवळची खूण",hi:"घर नंबर, सड़क, पास का लैंडमार्क"}
+      };
+      el.placeholder = (lang === 'en' ? raw : (placeholders[raw] && placeholders[raw][lang])) || raw;
+    });
+  }
+
+  function applyLang(lang){
+    const chosen = translations[lang] ? lang : 'en';
+
+    // The original home-page data-i18n system is retained and expanded to all views.
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      const dict = translations[chosen];
+      if (dict[key]) el.textContent = dict[key];
+    });
+
+    rememberAndTranslateText(chosen);
+    langSelect.value = chosen;
+    globalLangSelect.value = chosen;
+    try { localStorage.setItem('rht_lang', chosen); } catch(e) {}
+  }
+
+  let savedLang = 'en';
+  try { savedLang = localStorage.getItem('rht_lang') || 'en'; } catch(e) {}
+  langSelect.value = savedLang;
+  globalLangSelect.value = savedLang;
+  applyLang(savedLang);
+
+  langSelect.addEventListener('change', e => applyLang(e.target.value));
+  globalLangSelect.addEventListener('change', e => applyLang(e.target.value));
+
+  function syncLangControl(){
+    document.body.classList.toggle('inside-view', window.location.hash.replace('#','') !== 'home');
+  }
+  window.addEventListener('hashchange', syncLangControl);
+  syncLangControl();
+</script>
+
+</body>
+</html>
