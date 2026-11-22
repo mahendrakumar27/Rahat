@@ -507,25 +507,17 @@
 <section id="view-login" class="view">
   <div class="form-shell"><div class="form-top-nav"><button class="back-link" onclick="navigate('home')">&larr; Back to home</button></div>
     <div class="form-card auth-card">
-      <div class="auth-tabs"><button class="auth-tab active" id="tabLoginBtn" onclick="switchAuthTab('login')">Login</button><button class="auth-tab" id="tabSignupBtn" onclick="switchAuthTab('signup')">Sign Up</button></div>
-      <div class="auth-panel" id="panel-login"><h1>Welcome back</h1><p>Sign in to view prescriptions linked to your account.</p>
+      <div class="auth-tabs"><button class="auth-tab active" id="tabLoginBtn" type="button">Demo Login</button></div>
+      <div class="auth-panel" id="panel-login"><h1>Patient demo login</h1><p>Use the sample credentials below to open the prescription section.</p>
+        <div class="rx-warning"><strong>Sample patient account</strong><br>Email: patient@rahat.demo<br>Password: Patient@123</div>
         <form id="loginForm">
           <label class="field-label" for="loginEmail">Email address</label><input type="email" class="auth-input" id="loginEmail" required autocomplete="email" placeholder="you@example.com">
           <label class="field-label" for="loginPassword">Password</label><input type="password" class="auth-input" id="loginPassword" required autocomplete="current-password" minlength="10" placeholder="Your password">
           <div class="form-actions"><button class="btn-primary" type="submit" id="loginSubmit">Login</button></div>
         </form><p class="auth-switch-hint">New here? <button type="button" onclick="switchAuthTab('signup')">Create an account</button></p>
       </div>
-      <div class="auth-panel" id="panel-signup" style="display:none;"><h1>Create your patient account</h1><p>Register to keep your prescription copies linked to your account.</p>
-        <form id="signupForm">
-          <label class="field-label" for="signupName">Full name</label><input type="text" class="auth-input" id="signupName" required maxlength="100" autocomplete="name" placeholder="Your full name">
-          <label class="field-label" for="signupEmail">Email address</label><input type="email" class="auth-input" id="signupEmail" required autocomplete="email" placeholder="you@example.com">
-          <label class="field-label" for="signupMobile">Mobile number</label><input type="tel" class="auth-input" id="signupMobile" required maxlength="10" pattern="[0-9]{10}" inputmode="numeric" autocomplete="tel" placeholder="10-digit mobile number">
-          <label class="field-label" for="signupPassword">Create password</label><input type="password" class="auth-input" id="signupPassword" required minlength="10" maxlength="128" autocomplete="new-password" placeholder="At least 10 characters">
-          <div class="form-actions"><button class="btn-primary" type="submit" id="signupSubmit">Create account</button></div>
-        </form><p class="auth-switch-hint">Already have an account? <button type="button" onclick="switchAuthTab('login')">Login</button></p>
-      </div>
       <p id="authMessage" class="api-message" role="status" aria-live="polite"></p>
-      <p class="rx-warning"><strong>Prototype notice:</strong> Email/mobile verification is not enabled. Do not use real patient records until the backend is deployed with production security, persistent storage, backups, and privacy review.</p>
+      <p class="rx-warning"><strong>Important:</strong> This is a browser-only demonstration. The demo password is public and is not real authentication. Do not enter real patient information or upload real medical records.</p>
     </div>
   </div>
 </section>
@@ -552,7 +544,7 @@
   <div class="rx-shell"><div class="rx-wrap">
     <div class="form-top-nav"><button class="back-link" onclick="navigate('home')">&larr; Back to home</button><button class="rx-secondary" onclick="logoutPatient()">Logout</button></div>
     <div class="rx-head"><h1>My Prescriptions</h1><p id="patientWelcome">Your personal prescription records.</p></div>
-    <div class="rx-warning"><strong>Prototype only:</strong> Do not upload real medical records until the hosted API, persistent database, HTTPS, access controls, backups, and privacy requirements have been verified. This account system is a development milestone, not a certified medical-record service.</div>
+    <div class="rx-warning"><strong>Demo only:</strong> Files are stored in this browser using IndexedDB. They are not uploaded to a server, are not securely backed up, and may be lost if browser data is cleared. Do not upload real patient records.</div>
     <div class="rx-panel active" style="display:block"><h2>Upload an existing prescription</h2>
       <form id="rxUploadForm"><div class="rx-grid"><div class="rx-field full"><label for="rxUploadFile">Prescription file (PDF, JPG, PNG, or WebP; maximum 8 MB) *</label><input id="rxUploadFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" required></div></div>
       <div class="rx-actions"><button class="rx-primary" type="submit">Upload to my account</button></div></form>
@@ -1133,41 +1125,40 @@
     navigate('booking-confirm');
   }
 
-  /* ---------------- patient authentication ---------------- */
-  const API_BASE_URL=(window.RAHAT_API_BASE_URL||'').replace(/\/$/,'');
-  const AUTH_TOKEN_KEY='rahat_access_token';
-  function getAuthToken(){return sessionStorage.getItem(AUTH_TOKEN_KEY);}
-  function setAuthToken(token){sessionStorage.setItem(AUTH_TOKEN_KEY,token);}
-  function clearAuthToken(){sessionStorage.removeItem(AUTH_TOKEN_KEY);}
+  /* ---------------- local demo patient authentication ---------------- */
+  const DEMO_PATIENT = { email:'patient@rahat.demo', password:'Patient@123', full_name:'Demo Patient', role:'patient' };
+  const DEMO_SESSION_KEY = 'rahat_demo_patient_session';
+  function getAuthToken(){
+    try { return JSON.parse(sessionStorage.getItem(DEMO_SESSION_KEY) || 'null'); }
+    catch(error) { return null; }
+  }
+  function setAuthToken(user){ sessionStorage.setItem(DEMO_SESSION_KEY, JSON.stringify(user)); }
+  function clearAuthToken(){ sessionStorage.removeItem(DEMO_SESSION_KEY); }
   function switchAuthTab(mode){
-    document.getElementById('tabLoginBtn').classList.toggle('active',mode==='login');
-    document.getElementById('tabSignupBtn').classList.toggle('active',mode==='signup');
-    document.getElementById('panel-login').style.display=mode==='login'?'block':'none';
-    document.getElementById('panel-signup').style.display=mode==='signup'?'block':'none';
+    const loginMode = mode === 'login';
+    document.getElementById('tabLoginBtn')?.classList.toggle('active',loginMode);
+    document.getElementById('panel-login').style.display=loginMode?'block':'none';
     const msg=document.getElementById('authMessage');if(msg)msg.textContent='';
   }
-  function showAuthMessage(message,isError=true){const el=document.getElementById('authMessage');if(el){el.textContent=message;el.classList.toggle('error',isError);}}
-  function showDashboardMessage(message,isError=true){const el=document.getElementById('dashboardMessage');if(el){el.textContent=message;el.classList.toggle('error',isError);}}
-  async function apiRequest(path,options={}){
-    if(!API_BASE_URL)throw new Error('The Rahat API URL has not been configured. Deploy the backend before using accounts.');
-    const headers={...(options.headers||{})},token=getAuthToken();
-    if(token)headers.Authorization='Bearer '+token;
-    if(options.body&&!(options.body instanceof FormData))headers['Content-Type']='application/json';
-    const response=await fetch(API_BASE_URL+path,{...options,headers});
-    const data=response.status===204?{}:await response.json().catch(()=>({}));
-    if(response.status===401)clearAuthToken();
-    if(!response.ok)throw new Error(data.error||'The request could not be completed.');
-    return data;
+  function showAuthMessage(message,isError=true){
+    const el=document.getElementById('authMessage');
+    if(el){el.textContent=message;el.classList.toggle('error',isError);}
   }
-  document.getElementById('loginForm')?.addEventListener('submit',async event=>{
-    event.preventDefault();const button=document.getElementById('loginSubmit');button.disabled=true;showAuthMessage('Signing in...',false);
-    try{const data=await apiRequest('/api/auth/login',{method:'POST',body:JSON.stringify({email:document.getElementById('loginEmail').value.trim(),password:document.getElementById('loginPassword').value})});setAuthToken(data.access_token);event.target.reset();navigate('prescriptions');}
-    catch(error){showAuthMessage(error.message);}finally{button.disabled=false;}
-  });
-  document.getElementById('signupForm')?.addEventListener('submit',async event=>{
-    event.preventDefault();const button=document.getElementById('signupSubmit');button.disabled=true;showAuthMessage('Creating your account...',false);
-    try{const data=await apiRequest('/api/auth/register',{method:'POST',body:JSON.stringify({full_name:document.getElementById('signupName').value.trim(),email:document.getElementById('signupEmail').value.trim(),mobile:document.getElementById('signupMobile').value.trim(),password:document.getElementById('signupPassword').value})});setAuthToken(data.access_token);event.target.reset();navigate('prescriptions');}
-    catch(error){showAuthMessage(error.message);}finally{button.disabled=false;}
+  function showDashboardMessage(message,isError=true){
+    const el=document.getElementById('dashboardMessage');
+    if(el){el.textContent=message;el.classList.toggle('error',isError);}
+  }
+  document.getElementById('loginForm')?.addEventListener('submit',event=>{
+    event.preventDefault();
+    const email=document.getElementById('loginEmail').value.trim().toLowerCase();
+    const password=document.getElementById('loginPassword').value;
+    if(email !== DEMO_PATIENT.email || password !== DEMO_PATIENT.password){
+      showAuthMessage('Demo login failed. Use the sample patient email and password shown above.');
+      return;
+    }
+    setAuthToken({email:DEMO_PATIENT.email,full_name:DEMO_PATIENT.full_name,role:'patient'});
+    event.target.reset();
+    navigate('prescriptions');
   });
   function logoutPatient(){clearAuthToken();navigate('home');}
 
@@ -1471,48 +1462,152 @@
   window.addEventListener('hashchange', syncLangControl);
   syncLangControl();
 
-  /* ---------------- account-linked patient prescriptions ---------------- */
-  async function loadPatientDashboard(){
-    if(!getAuthToken()){navigate('login');return;}
-    const list=document.getElementById('rxList'),empty=document.getElementById('rxEmpty');if(!list||!empty)return;
-    list.innerHTML='';empty.style.display='none';showDashboardMessage('Loading your prescriptions...',false);
-    try{
-      const [profile,data]=await Promise.all([apiRequest('/api/me'),apiRequest('/api/prescriptions')]);
-      document.getElementById('patientWelcome').textContent='Welcome, '+profile.user.full_name+'. These records are linked to your account.';
-      renderPatientPrescriptions(data.prescriptions||[]);showDashboardMessage('',false);
-    }catch(error){if(!getAuthToken()){navigate('login');showAuthMessage('Your session expired. Please sign in again.');return;}showDashboardMessage(error.message);}
+  /* ---------------- browser-local prescription storage ---------------- */
+  const RX_DB_NAME = 'rahat_prescriptions_demo';
+  const RX_STORE_NAME = 'prescriptions';
+  let rxDatabasePromise;
+
+  function openPrescriptionDatabase(){
+    if(!('indexedDB' in window)) return Promise.reject(new Error('This browser does not support local prescription storage.'));
+    if(!rxDatabasePromise){
+      rxDatabasePromise = new Promise((resolve,reject)=>{
+        const request=indexedDB.open(RX_DB_NAME,1);
+        request.onupgradeneeded=()=>{
+          const database=request.result;
+          if(!database.objectStoreNames.contains(RX_STORE_NAME)){
+            const store=database.createObjectStore(RX_STORE_NAME,{keyPath:'id',autoIncrement:true});
+            store.createIndex('ownerEmail','ownerEmail',{unique:false});
+          }
+        };
+        request.onsuccess=()=>resolve(request.result);
+        request.onerror=()=>reject(new Error('Could not open local prescription storage.'));
+      });
+    }
+    return rxDatabasePromise;
   }
+
+  async function savePrescriptionRecord(record){
+    const database=await openPrescriptionDatabase();
+    return new Promise((resolve,reject)=>{
+      const transaction=database.transaction(RX_STORE_NAME,'readwrite');
+      const request=transaction.objectStore(RX_STORE_NAME).add(record);
+      request.onsuccess=()=>resolve(request.result);
+      request.onerror=()=>reject(new Error('Could not save this prescription in the browser.'));
+    });
+  }
+
+  async function getPrescriptionRecords(ownerEmail){
+    const database=await openPrescriptionDatabase();
+    return new Promise((resolve,reject)=>{
+      const transaction=database.transaction(RX_STORE_NAME,'readonly');
+      const request=transaction.objectStore(RX_STORE_NAME).index('ownerEmail').getAll(ownerEmail);
+      request.onsuccess=()=>resolve(request.result.sort((a,b)=>b.createdAt-a.createdAt));
+      request.onerror=()=>reject(new Error('Could not load your prescription history.'));
+    });
+  }
+
+  async function getPrescriptionRecord(id){
+    const database=await openPrescriptionDatabase();
+    return new Promise((resolve,reject)=>{
+      const request=database.transaction(RX_STORE_NAME,'readonly').objectStore(RX_STORE_NAME).get(Number(id));
+      request.onsuccess=()=>resolve(request.result);
+      request.onerror=()=>reject(new Error('Could not open this prescription.'));
+    });
+  }
+
+  async function removePrescriptionRecord(id){
+    const database=await openPrescriptionDatabase();
+    return new Promise((resolve,reject)=>{
+      const transaction=database.transaction(RX_STORE_NAME,'readwrite');
+      transaction.objectStore(RX_STORE_NAME).delete(Number(id));
+      transaction.oncomplete=()=>resolve();
+      transaction.onerror=()=>reject(new Error('Could not delete this prescription.'));
+    });
+  }
+
+  async function loadPatientDashboard(){
+    const user=getAuthToken();
+    if(!user){navigate('login');return;}
+    const list=document.getElementById('rxList'),empty=document.getElementById('rxEmpty');
+    if(!list||!empty)return;
+    list.innerHTML='';empty.style.display='none';
+    document.getElementById('patientWelcome').textContent='Welcome, '+user.full_name+'. Your files are saved in this browser.';
+    showDashboardMessage('Loading your prescriptions...',false);
+    try{
+      const records=await getPrescriptionRecords(user.email);
+      renderPatientPrescriptions(records);
+      showDashboardMessage('',false);
+    }catch(error){showDashboardMessage(error.message);}
+  }
+
   function renderPatientPrescriptions(records){
-    const list=document.getElementById('rxList'),empty=document.getElementById('rxEmpty');list.innerHTML='';empty.style.display=records.length?'none':'block';
+    const list=document.getElementById('rxList'),empty=document.getElementById('rxEmpty');
+    list.innerHTML='';empty.style.display=records.length?'none':'block';
     records.forEach(record=>{
-      const card=document.createElement('article');card.className='rx-card';const top=document.createElement('div');top.className='rx-card-top';
-      const details=document.createElement('div'),heading=document.createElement('h3');heading.textContent=record.filename;
-      const meta=document.createElement('div');meta.className='rx-meta';meta.textContent='Uploaded '+(record.created_at?new Date(record.created_at).toLocaleString('en-IN'):'date unavailable');details.append(heading,meta);
+      const card=document.createElement('article');card.className='rx-card';
+      const top=document.createElement('div');top.className='rx-card-top';
+      const details=document.createElement('div'),heading=document.createElement('h3');
+      heading.textContent=record.filename;
+      const meta=document.createElement('div');meta.className='rx-meta';
+      meta.textContent='Uploaded '+new Date(record.createdAt).toLocaleString('en-IN');
+      details.append(heading,meta);
       const actions=document.createElement('div');actions.className='rx-actions';
-      const view=document.createElement('button');view.className='rx-secondary';view.type='button';view.textContent='View / Download';view.addEventListener('click',()=>downloadPatientPrescription(record.id,record.filename));
-      const remove=document.createElement('button');remove.className='rx-secondary';remove.type='button';remove.textContent='Delete';remove.addEventListener('click',()=>deletePatientPrescription(record.id));
+      const view=document.createElement('button');view.className='rx-secondary';view.type='button';view.textContent='View / Download';
+      view.addEventListener('click',()=>downloadPatientPrescription(record.id));
+      const remove=document.createElement('button');remove.className='rx-secondary';remove.type='button';remove.textContent='Delete';
+      remove.addEventListener('click',()=>deletePatientPrescription(record.id));
       actions.append(view,remove);top.append(details,actions);card.append(top);list.append(card);
     });
   }
-  async function downloadPatientPrescription(id,filename){
+
+  async function downloadPatientPrescription(id){
     try{
-      const response=await fetch(API_BASE_URL+'/api/prescriptions/'+id+'/file',{headers:{Authorization:'Bearer '+getAuthToken()}});
-      if(response.status===401){clearAuthToken();navigate('login');return;}
-      if(!response.ok)throw new Error('Could not open this prescription.');
-      const blob=await response.blob(),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+      const user=getAuthToken(),record=await getPrescriptionRecord(id);
+      if(!record||!user||record.ownerEmail!==user.email)throw new Error('This prescription is not available in your demo account.');
+      const url=URL.createObjectURL(record.file);
+      const link=document.createElement('a');link.href=url;link.download=record.filename;
+      document.body.append(link);link.click();link.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),30000);
     }catch(error){showDashboardMessage(error.message);}
   }
+
   async function deletePatientPrescription(id){
-    if(!confirm('Delete this prescription from your account?'))return;
-    try{await apiRequest('/api/prescriptions/'+id,{method:'DELETE'});await loadPatientDashboard();}
-    catch(error){showDashboardMessage(error.message);}
+    if(!confirm('Delete this prescription from this browser?'))return;
+    try{
+      const user=getAuthToken(),record=await getPrescriptionRecord(id);
+      if(!record||!user||record.ownerEmail!==user.email)throw new Error('This prescription is not available in your demo account.');
+      await removePrescriptionRecord(id);
+      await loadPatientDashboard();
+      showDashboardMessage('Prescription deleted from this browser.',false);
+    }catch(error){showDashboardMessage(error.message);}
   }
+
   document.getElementById('rxUploadForm')?.addEventListener('submit',async event=>{
-    event.preventDefault();const file=document.getElementById('rxUploadFile').files[0];if(!file)return;
+    event.preventDefault();
+    const user=getAuthToken(),file=document.getElementById('rxUploadFile').files[0];
+    if(!user){navigate('login');return;}
+    if(!file)return;
+    const allowedTypes=['application/pdf','image/jpeg','image/png','image/webp'];
+    const allowedExtensions=/\.(pdf|jpe?g|png|webp)$/i;
     if(file.size>8*1024*1024){showDashboardMessage('Choose a file smaller than 8 MB.');return;}
-    const formData=new FormData();formData.append('file',file);const button=event.target.querySelector('button[type="submit"]');button.disabled=true;showDashboardMessage('Uploading prescription...',false);
-    try{await apiRequest('/api/prescriptions',{method:'POST',body:formData});event.target.reset();await loadPatientDashboard();showDashboardMessage('Prescription uploaded to your account.',false);}
-    catch(error){showDashboardMessage(error.message);}finally{button.disabled=false;}
+    if(!allowedTypes.includes(file.type)||!allowedExtensions.test(file.name)){
+      showDashboardMessage('Choose a PDF, JPG, PNG, or WebP file.');return;
+    }
+    const button=event.target.querySelector('button[type="submit"]');
+    button.disabled=true;showDashboardMessage('Saving prescription in this browser...',false);
+    try{
+      await savePrescriptionRecord({
+        ownerEmail:user.email,
+        filename:file.name,
+        mimeType:file.type,
+        file:file,
+        createdAt:Date.now()
+      });
+      event.target.reset();
+      await loadPatientDashboard();
+      showDashboardMessage('Prescription saved in this browser.',false);
+    }catch(error){showDashboardMessage(error.message);}
+    finally{button.disabled=false;}
   });
 
 </script>
