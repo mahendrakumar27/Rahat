@@ -5,15 +5,21 @@
 - Default branch: main
 - Frontend entry point: index.html
 - Published frontend: https://mahendrakumar27.github.io/Rahat/
-- Current stack before this milestone: HTML, CSS, JavaScript, GitHub Pages.
-- Prescription prototype previously used browser IndexedDB and was tested manually.
+- Current live prescription demo: static HTML/CSS/JavaScript with IndexedDB.
+- Earlier Flask backend files remain in the repository but are not required by the current GitHub Pages demo.
 
 ## Collaboration
 - Project developers listed in README: Mahendrakumar Surana and Ayush Jadhav.
 - User is a beginner in backend development; explain setup in small, ordered steps.
 
+## Demo credentials
+- Patient email: patient@rahat.demo
+- Patient password: Patient@123
+- These credentials are intentionally public demo credentials, not secure authentication.
+
 ## Safety and accuracy
-- Browser-local prescription storage is not a secure patient record system.
-- Do not encourage real medical document uploads until production deployment controls are verified.
-- Never claim OTP, email verification, doctor verification, or real booking unless implemented and tested.
-- Preserve distinction between patient-uploaded copies and clinician-authored prescriptions.
+- Prescription file bytes are stored only in the current browser profile using IndexedDB.
+- Do not describe local browser storage as a secure patient record system or backup.
+- Do not encourage real medical document uploads.
+- Never claim OTP, email verification, doctor verification, or clinician prescription authoring unless implemented and tested.
+- Preserve the distinction between patient-uploaded copies and clinician-authored prescriptions.
