@@ -21,20 +21,18 @@ The project aims to help people find healthcare services, understand preliminary
 - **Diagnostic Services:** Explore diagnostic services such as blood tests, blood sugar and blood pressure checks.
 - **Appointment Requests:** Interface for selecting preferred appointment dates and times.
 - **Health History:** Interface for viewing previous health check-ins.
-- **Patient Accounts (development milestone):** Email/password registration and login through the Flask API.
-- **My Prescriptions:** Account-linked prescription uploads with private list, download, and delete routes.
+- **My Prescriptions:** Browser-only demo login with prescription upload, local history, download, and delete using IndexedDB.
 
-*Note: The patient API must be deployed and configured separately. Email/SMS OTP verification, doctor accounts, clinician-authored prescriptions, persistent symptom history and confirmed appointment booking are not implemented.*
+*Note: The prescription feature is a browser-only demonstration. The sample login is public and not secure authentication; files stay in the current browser and must not contain real patient data. Doctor accounts, clinician-authored prescriptions, OTP verification and confirmed appointment booking are not implemented.*
 
 ## 🛠️ Technology Stack
 
 - HTML5
 - CSS3
 - JavaScript
-- Flask (REST API)
-- Flask-SQLAlchemy and PostgreSQL (hosted database; SQLite for local development)
-- JWT authentication and Werkzeug password hashing
+- IndexedDB (browser-local prescription file storage)
 - GitHub Pages (static frontend hosting)
+- Earlier Flask API prototype files remain in the repository but are not used by the live prescription demo.
 
 ## 🏗️ Project Structure
 
@@ -75,7 +73,7 @@ The frontend remains a static single-page site. The Flask API is deployed separa
 
 3. Follow `DEPLOYMENT.md` to start the Flask API and serve the frontend locally.
 
-The API is required for registration, login and account-linked prescription storage.
+The live prescription demo does not require a backend. Use the sample patient login shown on the website. Prescription files remain in the browser profile where they were uploaded.
 
 ## 🌐 Live Deployment
 
@@ -126,7 +124,7 @@ Both developers contributed to the design and development of Rahat.
 
 ## Patient accounts and prescriptions (development milestone)
 
-The repository now includes a Flask API for patient registration, login, and account-linked prescription uploads. The static website remains on GitHub Pages; the API must be deployed separately.
+The current live prescription feature is a frontend-only demonstration. It uses a public sample patient login and IndexedDB to keep uploaded prescription copies in the current browser. The older Flask API implementation remains in the repository but is not connected to the live frontend.
 
 - Backend: `app.py`
 - Dependencies: `requirements.txt`
@@ -134,6 +132,8 @@ The repository now includes a Flask API for patient registration, login, and acc
 - Deployment guide: `DEPLOYMENT.md`
 - Frontend API setting: `config.js`
 
-Patient accounts use password hashes and short-lived JWT access tokens. Prescription ownership is assigned by the backend from the authenticated account, not from a patient ID sent by the browser. Patients can list, download, and delete only their own uploaded files.
+**Important:** The sample login is public and is not secure authentication. IndexedDB is local browser storage, not a private server or backup. Do not upload real patient documents. The demo supports patient-uploaded copies only; clinician-authored prescriptions are not implemented.
+
+Earlier backend files (`app.py`, `requirements.txt`, `tests/`, `config.js`, and `DEPLOYMENT.md`) are retained for future development and are not required to run the current GitHub Pages demo.
 
 **Important:** This is a development prototype. Email/mobile OTP verification and doctor accounts are not implemented. Do not upload real patient records until the backend is deployed with a persistent database, HTTPS, secure secrets, backups, access controls, and an appropriate privacy/security review.
