@@ -1590,7 +1590,7 @@
     const allowedTypes=['application/pdf','image/jpeg','image/png','image/webp'];
     const allowedExtensions=/\.(pdf|jpe?g|png|webp)$/i;
     if(file.size>8*1024*1024){showDashboardMessage('Choose a file smaller than 8 MB.');return;}
-    if(!allowedTypes.includes(file.type)||!allowedExtensions.test(file.name)){
+    if((file.type && !allowedTypes.includes(file.type))||!allowedExtensions.test(file.name)){
       showDashboardMessage('Choose a PDF, JPG, PNG, or WebP file.');return;
     }
     const button=event.target.querySelector('button[type="submit"]');
