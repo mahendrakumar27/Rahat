@@ -1668,7 +1668,7 @@
       const card=document.createElement('article');card.className='rx-card';
       const top=document.createElement('div');top.className='rx-card-top';
       const details=document.createElement('div'),heading=document.createElement('h3');
-      heading.textContent=record.filename;
+      heading.textContent=record.filename || ('Digital prescription — '+record.diagnosis);
       const meta=document.createElement('div');meta.className='rx-meta';
       meta.textContent=(record.recordType==='doctor-authored'?'Created by '+record.doctorName+' · ':'Uploaded ')+new Date(record.createdAt).toLocaleString('en-IN');
       if(record.recordType==='doctor-authored'){
