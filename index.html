@@ -492,6 +492,11 @@
         <span class="text-col"><span class="label">Prescription management</span><span class="sub">Upload and create prescriptions</span></span>
       </button>
 
+      <button class="block-btn" style="--accent:var(--violet);--accent-tint:var(--violet-tint)" onclick="navigate('doctor-login')">
+        <span class="icon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="#6C4AB6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6M9 6h6M5 12a7 7 0 1 0 14 0"/><path d="M12 13v4M10 15h4"/></svg></span>
+        <span class="text-col"><span class="label">Doctor Login</span><span class="sub">Create and manage digital prescriptions</span></span>
+      </button>
+
       <button class="block-btn auth" onclick="navigate('login')">
         <span class="icon-chip"><svg viewBox="0 0 24 24" fill="none" stroke="#0047AB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
         <span class="text-col">
@@ -520,6 +525,46 @@
       <p class="rx-warning"><strong>Important:</strong> This is a browser-only demonstration. The demo password is public and is not real authentication. Do not enter real patient information or upload real medical records.</p>
     </div>
   </div>
+</section>
+
+<section id="view-doctor-login" class="view">
+  <div class="form-shell"><div class="form-top-nav"><button class="back-link" onclick="navigate('home')">&larr; Back to home</button></div>
+    <div class="form-card auth-card">
+      <div class="auth-panel"><h1>Doctor demo login</h1><p>Sign in to create digital prescriptions for a demo patient.</p>
+        <div class="rx-warning"><strong>Sample doctor account</strong><br>Email: doctor@rahat.demo<br>Password: Doctor@123<br>Public demo credentials; not secure authentication.</div>
+        <form id="doctorLoginForm">
+          <label class="field-label" for="doctorLoginEmail">Doctor email</label><input type="email" class="auth-input" id="doctorLoginEmail" required value="doctor@rahat.demo">
+          <label class="field-label" for="doctorLoginPassword">Password</label><input type="password" class="auth-input" id="doctorLoginPassword" required value="Doctor@123">
+          <div class="form-actions"><button class="btn-primary" type="submit">Doctor Login</button></div>
+        </form>
+        <p id="doctorAuthMessage" class="api-message" role="status" aria-live="polite"></p>
+      </div>
+      <p class="rx-warning"><strong>Demo only:</strong> No doctor identity or registration is verified. Do not enter real patient information or issue real medical instructions through this prototype.</p>
+    </div>
+  </div>
+</section>
+
+<section id="view-doctor-dashboard" class="view">
+  <div class="rx-shell"><div class="rx-wrap">
+    <div class="form-top-nav"><button class="back-link" onclick="navigate('home')">&larr; Back to home</button><button class="rx-secondary" onclick="logoutDoctor()">Logout</button></div>
+    <div class="rx-head"><h1>Doctor Dashboard</h1><p id="doctorWelcome">Create and review demo prescriptions.</p></div>
+    <div class="rx-warning"><strong>Demo only:</strong> Prescriptions are stored in this browser profile. This is not verified clinical software, secure authentication, or a substitute for a real prescribing system.</div>
+    <div class="rx-panel active" style="display:block"><h2>Create a digital prescription</h2>
+      <form id="doctorPrescriptionForm">
+        <div class="rx-grid">
+          <div class="rx-field"><label for="rxPatientName">Patient name *</label><input id="rxPatientName" required maxlength="80"></div>
+          <div class="rx-field"><label for="rxPatientEmail">Patient demo email *</label><input id="rxPatientEmail" type="email" required value="patient@rahat.demo"></div>
+          <div class="rx-field full"><label for="rxDiagnosis">Diagnosis / reason for visit *</label><input id="rxDiagnosis" required maxlength="200"></div>
+          <div class="rx-field full"><label for="rxMedicines">Medicines and dosage *</label><textarea id="rxMedicines" required maxlength="2000" placeholder="Enter medicine name, dosage and frequency as prescribed"></textarea></div>
+          <div class="rx-field full"><label for="rxInstructions">Additional instructions</label><textarea id="rxInstructions" maxlength="2000"></textarea></div>
+        </div>
+        <div class="rx-actions"><button class="rx-primary" type="submit">Save digital prescription</button></div>
+      </form>
+    </div>
+    <h2 style="font-family:var(--font-head);color:var(--cobalt-dark);margin:26px 0 4px">Prescriptions created by you</h2>
+    <div id="doctorRxList" class="rx-list"></div><div id="doctorRxEmpty" class="rx-empty">No digital prescriptions created yet.</div>
+    <p id="doctorDashboardMessage" class="api-message" role="status" aria-live="polite"></p>
+  </div></div>
 </section>
 
 <section id="view-history" class="view">
@@ -984,7 +1029,8 @@
      build it out — the nav plumbing below won't need to change.
   ---------------------------------------------------------- */
   function navigate(viewName){
-    if (viewName === 'prescriptions' && !getAuthToken()) viewName = 'login';
+    if (viewName === 'prescriptions' && (!getAuthToken() || getAuthToken().role !== 'patient')) viewName = 'login';
+    if (viewName === 'doctor-dashboard' && !getDoctorSession()) viewName = 'doctor-login';
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     const target = document.getElementById('view-' + viewName);
     if (target) target.classList.add('active');
@@ -992,6 +1038,7 @@
     window.scrollTo(0,0);
     if (viewName === 'history') renderSymptomHistory();
     if (viewName === 'prescriptions') loadPatientDashboard();
+    if (viewName === 'doctor-dashboard') loadDoctorDashboard();
   }
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -1161,6 +1208,30 @@
     navigate('prescriptions');
   });
   function logoutPatient(){clearAuthToken();navigate('home');}
+
+  const DEMO_DOCTOR = {email:'doctor@rahat.demo',password:'Doctor@123',full_name:'Demo Doctor',role:'doctor'};
+  const DOCTOR_SESSION_KEY = 'rahat_demo_doctor_session';
+  function getDoctorSession(){
+    try { return JSON.parse(sessionStorage.getItem(DOCTOR_SESSION_KEY) || 'null'); }
+    catch(error) { return null; }
+  }
+  function setDoctorSession(user){sessionStorage.setItem(DOCTOR_SESSION_KEY,JSON.stringify(user));}
+  function logoutDoctor(){sessionStorage.removeItem(DOCTOR_SESSION_KEY);navigate('home');}
+  function showDoctorMessage(message,isError=true){
+    const el=document.getElementById('doctorDashboardMessage');
+    if(el){el.textContent=message;el.classList.toggle('error',isError);}
+  }
+  document.getElementById('doctorLoginForm')?.addEventListener('submit',event=>{
+    event.preventDefault();
+    const email=document.getElementById('doctorLoginEmail').value.trim().toLowerCase();
+    const password=document.getElementById('doctorLoginPassword').value;
+    const message=document.getElementById('doctorAuthMessage');
+    if(email!==DEMO_DOCTOR.email || password!==DEMO_DOCTOR.password){
+      message.textContent='Login failed. Use the sample doctor credentials shown above.';
+      message.classList.add('error');return;
+    }
+    setDoctorSession(DEMO_DOCTOR);event.target.reset();navigate('doctor-dashboard');
+  });
 
   /* ---------------- doctor availability + appointment request ---------------- */
   let selectedDoctorForBooking = { name:'', area:'', hours:'' };
@@ -1506,6 +1577,15 @@
     });
   }
 
+  async function getAllPrescriptionRecords(){
+    const database=await openPrescriptionDatabase();
+    return new Promise((resolve,reject)=>{
+      const request=database.transaction(RX_STORE_NAME,'readonly').objectStore(RX_STORE_NAME).getAll();
+      request.onsuccess=()=>resolve(request.result);
+      request.onerror=()=>reject(new Error('Could not load prescription records.'));
+    });
+  }
+
   async function getPrescriptionRecord(id){
     const database=await openPrescriptionDatabase();
     return new Promise((resolve,reject)=>{
@@ -1524,6 +1604,47 @@
       transaction.onerror=()=>reject(new Error('Could not delete this prescription.'));
     });
   }
+
+  async function loadDoctorDashboard(){
+    const doctor=getDoctorSession();if(!doctor){navigate('doctor-login');return;}
+    document.getElementById('doctorWelcome').textContent='Welcome, '+doctor.full_name+'. Your created prescriptions are stored in this browser.';
+    const list=document.getElementById('doctorRxList'),empty=document.getElementById('doctorRxEmpty');
+    list.innerHTML='';empty.style.display='none';showDoctorMessage('Loading your prescriptions...',false);
+    try{
+      const records=(await getAllPrescriptionRecords()).filter(r=>r.recordType==='doctor-authored'&&r.createdBy===doctor.email).sort((a,b)=>b.createdAt-a.createdAt);
+      empty.style.display=records.length?'none':'block';
+      records.forEach(record=>{
+        const card=document.createElement('article');card.className='rx-card';
+        const title=document.createElement('h3');title.textContent=record.patientName+' — '+record.diagnosis;
+        const meta=document.createElement('div');meta.className='rx-meta';meta.textContent=record.ownerEmail+' · '+new Date(record.createdAt).toLocaleString('en-IN');
+        const actions=document.createElement('div');actions.className='rx-actions';
+        const view=document.createElement('button');view.className='rx-secondary';view.type='button';view.textContent='Download prescription';view.addEventListener('click',()=>downloadDoctorPrescription(record.id));
+        actions.append(view);card.append(title,meta,actions);list.append(card);
+      });
+      showDoctorMessage('',false);
+    }catch(error){showDoctorMessage(error.message);}
+  }
+  async function downloadDoctorPrescription(id){
+    try{
+      const doctor=getDoctorSession(),record=await getPrescriptionRecord(id);
+      if(!doctor||!record||record.createdBy!==doctor.email)throw new Error('This record is not available in your doctor demo account.');
+      const textContent='RAHAT DIGITAL PRESCRIPTION\\nPatient: '+record.patientName+' ('+record.ownerEmail+')\\nDoctor: '+record.doctorName+'\\nDate: '+new Date(record.createdAt).toLocaleString('en-IN')+'\\nDiagnosis: '+record.diagnosis+'\\nMedicines and dosage:\\n'+record.medicines+'\\nAdditional instructions:\\n'+(record.instructions||'None')+'\\n\\nDEMO ONLY — not a valid clinical prescription.';
+      const url=URL.createObjectURL(new Blob([textContent],{type:'text/plain'}));
+      const link=document.createElement('a');link.href=url;link.download='Rahat-Prescription-'+record.id+'.txt';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+    }catch(error){showDoctorMessage(error.message);}
+  }
+  document.getElementById('doctorPrescriptionForm')?.addEventListener('submit',async event=>{
+    event.preventDefault();const doctor=getDoctorSession();if(!doctor){navigate('doctor-login');return;}
+    const patientEmail=document.getElementById('rxPatientEmail').value.trim().toLowerCase();
+    if(patientEmail!==DEMO_PATIENT.email){showDoctorMessage('For this demo, use the sample patient email: '+DEMO_PATIENT.email);return;}
+    const record={
+      recordType:'doctor-authored',ownerEmail:patientEmail,patientName:document.getElementById('rxPatientName').value.trim(),
+      doctorName:doctor.full_name,createdBy:doctor.email,diagnosis:document.getElementById('rxDiagnosis').value.trim(),
+      medicines:document.getElementById('rxMedicines').value.trim(),instructions:document.getElementById('rxInstructions').value.trim(),createdAt:Date.now()
+    };
+    try{await savePrescriptionRecord(record);event.target.reset();document.getElementById('rxPatientEmail').value=DEMO_PATIENT.email;await loadDoctorDashboard();showDoctorMessage('Digital demo prescription saved. The patient can see it in the same browser profile.',false);}
+    catch(error){showDoctorMessage(error.message);}
+  });
 
   async function loadPatientDashboard(){
     const user=getAuthToken();
@@ -1549,8 +1670,11 @@
       const details=document.createElement('div'),heading=document.createElement('h3');
       heading.textContent=record.filename;
       const meta=document.createElement('div');meta.className='rx-meta';
-      meta.textContent='Uploaded '+new Date(record.createdAt).toLocaleString('en-IN');
-      details.append(heading,meta);
+      meta.textContent=(record.recordType==='doctor-authored'?'Created by '+record.doctorName+' · ':'Uploaded ')+new Date(record.createdAt).toLocaleString('en-IN');
+      if(record.recordType==='doctor-authored'){
+        const diagnosis=document.createElement('div');diagnosis.className='rx-meta';diagnosis.textContent='Diagnosis: '+record.diagnosis;
+        details.append(heading,meta,diagnosis);
+      }else{details.append(heading,meta);}
       const actions=document.createElement('div');actions.className='rx-actions';
       const view=document.createElement('button');view.className='rx-secondary';view.type='button';view.textContent='View / Download';
       view.addEventListener('click',()=>downloadPatientPrescription(record.id));
@@ -1564,8 +1688,11 @@
     try{
       const user=getAuthToken(),record=await getPrescriptionRecord(id);
       if(!record||!user||record.ownerEmail!==user.email)throw new Error('This prescription is not available in your demo account.');
-      const url=URL.createObjectURL(record.file);
-      const link=document.createElement('a');link.href=url;link.download=record.filename;
+      const content=record.recordType==='doctor-authored'
+        ? 'RAHAT DIGITAL PRESCRIPTION\\nPatient: '+record.patientName+' ('+record.ownerEmail+')\\nDoctor: '+record.doctorName+'\\nDate: '+new Date(record.createdAt).toLocaleString('en-IN')+'\\nDiagnosis: '+record.diagnosis+'\\nMedicines and dosage:\\n'+record.medicines+'\\nAdditional instructions:\\n'+(record.instructions||'None')+'\\n\\nDEMO ONLY — not a valid clinical prescription.'
+        : record.file;
+      const url=URL.createObjectURL(content instanceof Blob?content:new Blob([content],{type:'text/plain'}));
+      const link=document.createElement('a');link.href=url;link.download=record.filename||('Rahat-Prescription-'+record.id+'.txt');
       document.body.append(link);link.click();link.remove();
       setTimeout(()=>URL.revokeObjectURL(url),30000);
     }catch(error){showDashboardMessage(error.message);}
