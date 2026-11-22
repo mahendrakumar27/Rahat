@@ -3,26 +3,30 @@
 ## Current prescription demo
 - Frontend: static HTML, CSS, and JavaScript in `index.html`.
 - Hosting: GitHub Pages.
-- Authentication: fixed public demo credentials; a sessionStorage flag identifies the current demo session. This is navigation for demonstration only, not security.
-- Prescription files: browser IndexedDB stores file blobs and metadata. Each record is associated with the demo patient's email.
+- Authentication: separate fixed public demo credentials for patient and doctor; sessionStorage keeps each role's current demo session. This is navigation for demonstration only, not security.
+- Prescription data: browser IndexedDB database `rahat_prescriptions_demo`, object store `prescriptions`.
+- Patient uploads: store file blob and metadata with `ownerEmail`.
+- Doctor-authored records: store patient name/email, doctor name/email, diagnosis, medicines/dosage, instructions, and timestamp with `recordType: doctor-authored`.
 - No backend URL or Flask API is required for the live prescription demo.
 
 ## Data flow
-1. The visitor enters the sample patient credentials.
-2. The frontend checks the entered values against the published demo credentials.
-3. The upload form validates file type and the 8 MB size limit.
-4. IndexedDB stores the file blob, filename, MIME type, owner email, and upload timestamp.
-5. The dashboard reads records for the current demo email and supports download and delete.
+1. Patient or doctor chooses the corresponding login entry point.
+2. Frontend checks entered values against that role's published demo credentials.
+3. Patient uploads are validated for supported type and 8 MB maximum, then stored in IndexedDB.
+4. Doctor enters a digital prescription for the sample patient; the record is stored in IndexedDB.
+5. Both role dashboards filter records by patient email or creating doctor email.
+6. Digital prescription records can be downloaded as text files; uploaded patient files can be downloaded in their original format.
 
 ## Existing backend files
 The repository retains an earlier Flask API implementation (`app.py`, `requirements.txt`, tests, and deployment notes), but the current GitHub Pages prescription demo does not call or require that API. Do not describe the backend as deployed or active.
 
 ## Limitations
-- The demo password is public and must never be treated as secure authentication.
-- IndexedDB data stays in the current browser profile and does not sync across devices or users.
+- Both demo passwords are public and are not secure authentication.
+- The doctor account is not verified; anyone can use its public credentials.
+- IndexedDB data stays in the current browser profile. It is not shared across devices, browsers, or users.
 - Browser storage can be cleared or evicted; it is not a backup.
-- Browser-local storage is not suitable for real patient records or confidential medical documents.
-- Doctor accounts and clinician-authored prescriptions are not implemented.
+- This workflow is not clinically valid or appropriate for real prescribing or patient records.
+- Digital prescriptions are demo text records, not signed, verified, regulated e-prescriptions.
 
 ## Future architecture
-A future production-oriented version would need a separately deployed API, secure authentication, verified roles, private persistent storage, access-control enforcement, HTTPS, backups, monitoring, and privacy/security review before real patient data is considered.
+A production-oriented version requires a separately deployed API, secure authentication, verified clinician identity and role-based access control, private persistent storage, audit logs, backups, HTTPS, monitoring, and privacy/security and regulatory review before real patient data or prescribing is considered.
