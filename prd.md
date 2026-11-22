@@ -1,37 +1,37 @@
 # Rahat Product Requirements Document
 
 ## Product goal
-Rahat is a rural-health access prototype. This milestone adds real patient accounts and a private prescription area. It is not a production medical-record system.
+Rahat is a rural-health access prototype. This milestone provides a browser-only prescription upload demonstration that can run on GitHub Pages without a deployed backend.
 
 ## Users and scope
-- Patient: can register, sign in, view only prescriptions owned by their account, upload an existing prescription, and download/delete their own uploaded copy.
-- Doctor: not publicly self-registering in this milestone. A future verified doctor workflow may create clinician-authored prescriptions.
-- Administrator: not implemented in this milestone.
+- Demo patient: signs in with the published sample credentials and manages prescription file copies stored locally in their own browser.
+- Doctor: clinician-authored prescriptions and doctor accounts are not part of this milestone.
+- Administrator: not implemented.
 
 ## Functional requirements
-1. Patient registration requires name, email, mobile number, and a password.
-2. Email is unique; passwords are hashed by the backend and never stored as plaintext.
-3. Patient login returns a short-lived signed access token.
-4. Authenticated patient can view their profile.
-5. Authenticated patient can upload PDF/JPEG/PNG/WebP prescriptions (maximum 8 MB).
-6. Every prescription is linked server-side to the authenticated patient ID; the API must never accept a patient ID from the browser for ownership.
-7. Patient can list, download, and delete only their own uploaded prescriptions.
-8. Signed-out users cannot access the patient dashboard or prescription endpoints.
-9. UI must clearly state that the current build is a prototype and must not receive real patient records until hosting, secrets, database persistence, HTTPS, access controls, backups, and privacy/legal review are verified.
+1. The demo patient can sign in using the sample credentials displayed on the login screen.
+2. The patient can upload PDF, JPEG, PNG, or WebP prescription copies up to 8 MB.
+3. Prescription files and metadata are stored in browser IndexedDB.
+4. The patient can list, view/download, and delete their local prescription copies.
+5. Records remain available in the same browser profile after refresh, subject to browser storage remaining intact.
+6. The app clearly explains that this is a public demo, not secure authentication or medical-record storage.
+7. The static site must not require a Flask API URL for the prescription demo.
 
 ## Non-functional requirements
-- Use Flask, SQLAlchemy, PostgreSQL in hosted deployment, and password hashing.
-- CORS must be restricted to the published frontend origin.
-- Enforce request size and file-type checks on the server.
-- No real OTP claim: email/mobile verification is not included.
-- Do not allow patients to create clinician prescriptions or issue medication instructions.
+- Keep the frontend compatible with static GitHub Pages hosting.
+- Use IndexedDB for binary file storage; do not store uploaded file bytes in localStorage.
+- Do not claim that the sample login protects records. The demo credentials are public.
+- Do not encourage real patient records or medical documents to be uploaded.
+- Do not allow patients to create clinician-authored prescriptions or medication instructions.
 
 ## Acceptance criteria
-- Registration and login work against the Flask API.
-- Patient A cannot list, download, or delete Patient B's prescription, even by changing an ID in the URL.
-- Prescription records survive app restarts when a persistent PostgreSQL database is configured.
-- Missing backend configuration produces a clear unavailable message, not fake success.
-- Automated tests cover auth, ownership isolation, upload validation, and unauthenticated access.
+- The live GitHub Pages site can open the prescription section without a deployed API.
+- The displayed sample patient credentials sign in successfully.
+- Uploading an allowed file adds it to the prescription list.
+- Refreshing the page preserves the uploaded item in the same browser profile.
+- View/download returns the stored file and delete removes it from the local list.
+- Invalid file types and files over 8 MB are rejected with a visible message.
+- Signed-out visitors are redirected to the demo login before accessing the prescription view.
 
 ## Out of scope
-Real OTP delivery, doctor onboarding/verification, clinician prescription authoring, appointment booking integration, symptom-history synchronization, and production clinical use.
+Secure multi-user authentication, server-side storage, cloud synchronization, verified doctor accounts, clinician-authored prescriptions, real OTP delivery, appointment booking integration, and production clinical use.
