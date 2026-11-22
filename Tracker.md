@@ -2,23 +2,27 @@
 
 ## Completed
 - [x] Static Rahat website deployed with GitHub Pages.
-- [x] Browser-local prescription upload and draft prototype explored earlier.
-- [x] Replaced backend-dependent prescription login and API calls in the live frontend with a browser-only patient demo.
-- [x] Added IndexedDB storage for uploaded prescription files and metadata.
-- [x] Added local list, view/download, and delete actions.
-- [x] Added sample patient demo login and clear storage/security warnings.
-- [x] Updated project documentation to describe the current frontend-only demo.
+- [x] Browser-local patient prescription upload, list, download, and delete.
+- [x] Patient demo login with clear storage/security warnings.
+- [x] Added separate doctor demo login and doctor dashboard.
+- [x] Added doctor-authored digital prescription records with patient, diagnosis, medicines/dosage, and instructions.
+- [x] Linked doctor-created demo records to the sample patient account in IndexedDB.
+- [x] Added patient access to doctor-created records and text download.
+- [x] Updated project documentation for the two-role browser-only workflow.
 
 ## Current demo limitations
-- [ ] Secure patient authentication.
+- [ ] Secure patient and doctor authentication.
+- [ ] Verified doctor identity and clinical authorization.
 - [ ] Server-side/private prescription storage and cross-device synchronization.
-- [ ] Verified doctor onboarding and clinician-authored prescriptions.
+- [ ] Signed/regulated e-prescription workflow and audit trail.
 - [ ] Hosted backend and persistent database deployment.
-- [ ] Production privacy/security review, backups, monitoring, and incident response.
+- [ ] Production privacy/security, clinical, and regulatory review.
 
 ## Manual verification still required
-- [ ] Test sample login on the published GitHub Pages site.
-- [ ] Upload a small sample PDF/image and confirm it appears.
-- [ ] Refresh and confirm the record remains in the same browser.
-- [ ] Test view/download and delete.
+- [ ] Test patient login and patient upload on the published GitHub Pages site.
+- [ ] Test doctor login and creation of a digital prescription.
+- [ ] Confirm the created record appears in the doctor list and patient account in the same browser profile.
+- [ ] Download and inspect the doctor-created text prescription.
+- [ ] Test patient view/download/delete for uploaded files.
 - [ ] Confirm invalid file types and files larger than 8 MB are rejected.
+- [ ] Confirm role logout and login guards work.
