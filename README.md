@@ -126,14 +126,12 @@ Both developers contributed to the design and development of Rahat.
 
 The current live prescription feature is a frontend-only demonstration. It uses a public sample patient login and IndexedDB to keep uploaded prescription copies in the current browser. The older Flask API implementation remains in the repository but is not connected to the live frontend.
 
-- Backend: `app.py`
-- Dependencies: `requirements.txt`
-- Automated API tests: `tests/test_api.py`
-- Deployment guide: `DEPLOYMENT.md`
-- Frontend API setting: `config.js`
+- Frontend demo: `index.html`
+- Browser storage: IndexedDB
+- Legacy backend prototype (not connected): `app.py`, `requirements.txt`, `tests/`, `config.js`, and `DEPLOYMENT.md`
 
 **Important:** The sample login is public and is not secure authentication. IndexedDB is local browser storage, not a private server or backup. Do not upload real patient documents. The demo supports patient-uploaded copies only; clinician-authored prescriptions are not implemented.
 
 Earlier backend files (`app.py`, `requirements.txt`, `tests/`, `config.js`, and `DEPLOYMENT.md`) are retained for future development and are not required to run the current GitHub Pages demo.
 
-**Important:** This is a development prototype. Email/mobile OTP verification and doctor accounts are not implemented. Do not upload real patient records until the backend is deployed with a persistent database, HTTPS, secure secrets, backups, access controls, and an appropriate privacy/security review.
+**Important:** Do not upload real patient records to this browser-only demo. A future production version would require a separately deployed backend, persistent private storage, secure authentication, access controls, backups, HTTPS, and privacy/security review.
