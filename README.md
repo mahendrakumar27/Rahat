@@ -2,40 +2,41 @@
 
 **Rahat** is a web-based healthcare support platform designed to improve access to healthcare information and services in rural areas.
 
-The project aims to help people find healthcare services, understand preliminary symptom information, discover doctors and diagnostic services, and request appointments through a simple interface.
-
 **Live Website:** https://mahendrakumar27.github.io/Rahat/
 
-## 🎯 Project Objectives
+## Key Features
+- Symptom assessment interface and preliminary guidance.
+- Doctor discovery and diagnostic service discovery.
+- Appointment request interface.
+- Symptom history.
+- Patient prescription management: upload, view/download, and delete prescription copies.
+- Doctor demo login: create and review digital prescription records for the sample patient.
+- Patient dashboard can view/download doctor-created demo records.
 
-- Improve access to healthcare information in rural communities.
-- Help users understand preliminary symptom-related information.
-- Make doctor and diagnostic service discovery easier.
-- Support appointment requests through a digital interface.
-- Build a foundation for a scalable rural healthcare referral platform.
+## Prescription demo credentials
 
-## ✨ Key Features
+**Patient**
+- Email: `patient@rahat.demo`
+- Password: `Patient@123`
 
-- **Symptom Assessment:** Interface for entering symptoms and viewing preliminary health guidance.
-- **Doctor Discovery:** Browse doctor information and availability.
-- **Diagnostic Services:** Explore diagnostic services such as blood tests, blood sugar and blood pressure checks.
-- **Appointment Requests:** Interface for selecting preferred appointment dates and times.
-- **Health History:** Interface for viewing previous health check-ins.
-- **My Prescriptions:** Browser-only demo login with prescription upload, local history, download, and delete using IndexedDB.
+**Doctor**
+- Email: `doctor@rahat.demo`
+- Password: `Doctor@123`
 
-*Note: The prescription feature is a browser-only demonstration. The sample login is public and not secure authentication; files stay in the current browser and must not contain real patient data. Doctor accounts, clinician-authored prescriptions, OTP verification and confirmed appointment booking are not implemented.*
+These are public sample credentials for demonstration only. They do not provide secure authentication or verify a doctor's identity.
 
-## 🛠️ Technology Stack
+## Technology
+- HTML5, CSS3, JavaScript
+- IndexedDB for browser-local prescription records and uploaded file blobs
+- GitHub Pages static hosting
+- Earlier Flask API prototype files remain in the repository but are not connected to the live prescription demo.
 
-- HTML5
-- CSS3
-- JavaScript
-- IndexedDB (browser-local prescription file storage)
-- GitHub Pages (static frontend hosting)
-- Earlier Flask API prototype files remain in the repository but are not used by the live prescription demo.
+## Important limitations
+The prescription workflow is a frontend-only demonstration. Patient uploads and doctor-created demo records are stored in IndexedDB in the current browser profile. They do not sync across devices or browser profiles and may be cleared by browser storage cleanup.
 
-## 🏗️ Project Structure
+Doctor-created records are unsigned text-based demo records, not valid clinical prescriptions. Doctor identity is not verified. Do not enter real patient data or real medication instructions. A production system would require secure authentication, verified clinician onboarding, server-side private storage, access controls, audit logs, backups, HTTPS, and privacy/security and regulatory review.
 
+## Project structure
 ```text
 Rahat/
 ├── index.html
@@ -43,8 +44,6 @@ Rahat/
 ├── app.py
 ├── requirements.txt
 ├── tests/
-│   └── test_api.py
-├── .github/workflows/backend-tests.yml
 ├── prd.md
 ├── architecture.md
 ├── Design.md
@@ -55,83 +54,15 @@ Rahat/
 └── README.md
 ```
 
-The frontend remains a static single-page site. The Flask API is deployed separately.
+## Run locally
+1. Clone `https://github.com/mahendrakumar27/Rahat.git`.
+2. Open the repository folder.
+3. Open `index.html` in a browser for the static frontend demo.
+4. The live prescription demo does not require a backend.
 
-## 🚀 Run Locally
+## Project developers
+1. Mahendrakumar Surana
+2. Ayush Jadhav
 
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/mahendrakumar27/Rahat.git
-   ```
-
-2. Open the project folder:
-
-   ```bash
-   cd Rahat
-   ```
-
-3. Follow `DEPLOYMENT.md` to start the Flask API and serve the frontend locally.
-
-The live prescription demo does not require a backend. Use the sample patient login shown on the website. Prescription files remain in the browser profile where they were uploaded.
-
-## 🌐 Live Deployment
-
-The project is hosted using GitHub Pages.
-
-Visit: https://mahendrakumar27.github.io/Rahat/
-
-## 🔮 Future Enhancements
-
-- Add verified doctor onboarding and clinician-authored prescriptions.
-- Add email/mobile verification and account recovery.
-- Add verified government healthcare facilities across Satara district.
-- Integrate location-based hospital and PHC discovery.
-- Implement real appointment request and tracking functionality.
-- Develop a clinically validated symptom triage and referral workflow.
-- Add Marathi language support.
-- Improve mobile responsiveness and accessibility.
-
-## ⚠️ Disclaimer
-
-Rahat is a healthcare technology prototype and is not a replacement for professional medical advice, diagnosis or treatment.
-
-Users should consult qualified healthcare professionals for medical decisions. Emergency symptoms require immediate medical attention.
-
-## 👨‍💻 Project Information
-
-## 👨‍💻 Project Developers
-
-This project was collaboratively developed by:
-
-1. **Mahendrakumar Surana**
-2. **Ayush Jadhav**
-
-Both developers contributed to the design and development of Rahat.
-
-## 📌 Project Information
-
-- **Project Name:** Rahat
-- **Project Domain:** Healthcare Technology
-- **Focus Area:** Rural Healthcare Access and Referral Support
-- **Development:** Collaborative Project
-- **Repository:** https://github.com/mahendrakumar27/Rahat
-- **Live Website:** https://mahendrakumar27.github.io/Rahat/
----
-
-⭐ If you find this project interesting, consider exploring the repository and following its development.
-
-
-## Patient accounts and prescriptions (development milestone)
-
-The current live prescription feature is a frontend-only demonstration. It uses a public sample patient login and IndexedDB to keep uploaded prescription copies in the current browser. The older Flask API implementation remains in the repository but is not connected to the live frontend.
-
-- Frontend demo: `index.html`
-- Browser storage: IndexedDB
-- Legacy backend prototype (not connected): `app.py`, `requirements.txt`, `tests/`, `config.js`, and `DEPLOYMENT.md`
-
-**Important:** The sample login is public and is not secure authentication. IndexedDB is local browser storage, not a private server or backup. Do not upload real patient documents. The demo supports patient-uploaded copies only; clinician-authored prescriptions are not implemented.
-
-Earlier backend files (`app.py`, `requirements.txt`, `tests/`, `config.js`, and `DEPLOYMENT.md`) are retained for future development and are not required to run the current GitHub Pages demo.
-
-**Important:** Do not upload real patient records to this browser-only demo. A future production version would require a separately deployed backend, persistent private storage, secure authentication, access controls, backups, HTTPS, and privacy/security review.
+## Disclaimer
+Rahat is a healthcare technology prototype and is not a replacement for professional medical advice, diagnosis, or treatment. Emergency symptoms require immediate medical attention.
