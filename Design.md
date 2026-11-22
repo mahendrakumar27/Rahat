@@ -1,21 +1,22 @@
 # Rahat Design Notes
 
-## Patient journey
-1. Home → Login / Sign up.
-2. Sign up with full name, email, mobile number, and password.
-3. Sign in with email and password.
-4. Successful authentication opens the patient dashboard.
-5. Dashboard shows the patient's name and their own uploaded prescriptions.
-6. Patient uploads a PDF or supported image; the list refreshes from the backend.
-7. Patient can open/download or delete their own file.
-8. Logout clears the session token and returns to the home page.
+## Patient demo journey
+1. Home → Login / Sign up navigation entry.
+2. Demo login screen displays the sample patient email and password.
+3. Successful demo login opens My Prescriptions.
+4. Dashboard displays the demo patient's locally stored prescription copies.
+5. Patient uploads a PDF or supported image (maximum 8 MB).
+6. Patient can view/download or delete each saved file.
+7. Logout ends the current demo session and returns to the home page.
 
 ## UI rules
-- Use existing Rahat blue/white visual language.
-- Never show a fake OTP or claim a message was sent.
-- Show clear loading, success, validation, and API-unavailable states.
-- Hide the old patient-facing "create prescription draft" form; patients cannot author clinician prescriptions.
-- Label this milestone as a prototype and warn against real patient data until production controls are verified.
+- Use the existing Rahat blue/white visual language.
+- Clearly label the feature as a browser-only demo.
+- Explain that IndexedDB data is local to the current browser and can be cleared.
+- Never claim the sample login is secure or that files are uploaded to a server.
+- Do not encourage real patient records or medical document uploads.
+- Do not expose a patient-facing clinician prescription creation form.
+- Show visible loading, validation, success, and storage error messages.
 - Empty state: "No prescriptions are linked to this account yet."
 
 ## Accessibility
