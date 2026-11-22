@@ -1,7 +1,7 @@
 # Rahat Design Notes
 
 ## Patient demo journey
-1. Home → Login / Sign up navigation entry.
+1. Home → Patient Login.
 2. Demo login screen displays the sample patient email and password.
 3. Successful demo login opens My Prescriptions.
 4. Dashboard displays the demo patient's locally stored prescription copies.
